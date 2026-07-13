@@ -14,7 +14,7 @@ import LandmarkDetailView from './components/LandmarkDetailView';
 import StampConfirmationView from './components/StampConfirmationView';
 import CompletionView from './components/CompletionView';
 import { getSupabase } from './lib/supabase/client';
-import { LogOut, Loader2 } from 'lucide-react';
+import { LogOut, Loader2, Download } from 'lucide-react';
 
 // Helper: safely parse JSON without throwing on HTML error pages
 async function safeJson(res: Response): Promise<any> {
@@ -421,7 +421,7 @@ export default function App() {
           <div className="flex-1 flex flex-col items-center justify-center min-h-screen">
             <Loader2 className="w-10 h-10 text-[#CBA052] animate-spin mb-4" />
             <span className="font-mono text-xs uppercase text-white/60 tracking-widest">
-              Loading VSU E-Passport...
+              Loading USSC E-Passport...
             </span>
           </div>
         );
@@ -445,7 +445,7 @@ export default function App() {
         );
 
       case Page.PASSPORT: {
-        const nextLandmark = landmarks.find(lm => !stamps.some(s => s.landmark_id === lm.id)) || landmarks[landmarks.length - 1];
+        const nextLandmark = landmarks.find(lm => !stamps.some(s => s.landmark_id === lm.id));
 
         return (
           <div className="flex flex-col w-full h-screen bg-[#FDF9F0] relative overflow-hidden">
@@ -481,7 +481,7 @@ export default function App() {
 
                 <div className="text-center flex-1 mx-1">
                   <h1 className="text-[9px] font-bold uppercase tracking-widest text-[#CBA052]">Campus Tour</h1>
-                  <p className="text-base font-black italic tracking-wide text-white leading-none">VSU E-PASSPORT</p>
+                  <p className="text-base font-black italic tracking-wide text-white leading-none">USSC E-PASSPORT</p>
                 </div>
 
                 <button
@@ -512,7 +512,7 @@ export default function App() {
             </div>
 
             {/* Next up Footer */}
-            {nextLandmark && (
+            {nextLandmark ? (
               <div className="p-4 px-6 bg-white border-t border-gray-100 flex items-center justify-between z-10 rounded-t-[32px] shadow-inner relative">
                 <div className="flex-1 text-left overflow-hidden mr-2">
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Next up</p>
@@ -527,6 +527,20 @@ export default function App() {
                 >
                   <span className="text-sm font-bold">+</span>
                   <span>STAMP</span>
+                </button>
+              </div>
+            ) : (
+              <div className="p-4 px-6 bg-white border-t border-gray-100 grid gap-2 items-center justify-center z-10 rounded-t-[32px] shadow-inner relative">
+                <div className="flex-1 text-center overflow-hidden mr-2">
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">You've got the whole campus</p>
+                  <p className="font-black text-[#004225] text-xs md:text-sm truncate">CONGRATULATIONS!</p>
+                </div>
+                <button
+                  onClick={() => { }}
+                  className="bg-[#CBA052] hover:bg-[#b0873e] text-[#004225] font-extrabold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>DOWNLOAD PASSPORT</span>
                 </button>
               </div>
             )}
@@ -601,7 +615,7 @@ export default function App() {
             Mobile Only
           </h1>
           <p className="font-sans text-sm text-white/80 leading-relaxed">
-            VSU E-Passport is designed for mobile and tablet devices. Please open this app on your smartphone or tablet to begin your campus tour.
+            USSC E-Passport is designed for mobile and tablet devices. Please open this app on your smartphone or tablet to begin your campus tour.
           </p>
         </div>
         <div className="flex items-center gap-2 font-mono text-[10px] text-white/40 uppercase tracking-widest border border-white/10 rounded-full px-4 py-2">

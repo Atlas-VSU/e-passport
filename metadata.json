@@ -1,5 +1,5 @@
 {
-  "name": "VSU E-Passport",
+  "name": "USSC E-Passport",
   "description": "A gamified digital passport tour through Visayas State University's iconic landmarks.",
   "requestFramePermissions": ["camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

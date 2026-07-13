@@ -58,26 +58,31 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
 
   return (
     <div className="w-full min-h-screen bg-[#FDF9F0] p-6 relative overflow-y-auto flex flex-col gap-5">
-      {/* Decorative Stamp Slot */}
-      <div className="absolute top-4 right-4 w-12 h-12 border-2 border-dashed border-[#CBA052]/40 rounded-md flex items-center justify-center opacity-60">
-        <ShieldCheck className="text-[#CBA052] w-5 h-5" />
-      </div>
 
       {/* Header */}
       <header className="text-center flex flex-col items-center gap-3 mt-4">
-        <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center border-4 border-[#CBA052] shadow-inner overflow-hidden">
-          <img
-            className="w-full h-full object-cover"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp2sBzLI1xPXv6z2EFg4v-JE_X6la7unIVAMQnw7cqVXBeyK-Au3VpRS4T7RQ7GVjjVK0yI8RJ_4X-BXafhexkK9hxwSxKaOxIdUZlsoENaNpY3xMF62WDVCjJzFIppAxom80idElG7DfkvGaqHoI2tmISZjqXX5_ouxxjU4SBQQ63OWjzcKJZMM7S0Np8n_Fg8mFiEmRhoOkc1MOsk6CXXiTA5f715hqQOjztMqWW01aBRKEDKH_ZRA"
-            alt="Visayas State University Seal"
-          />
+        <div className="flex flex-row items-center gap-3">
+          <div className="w-17 h-20 bg-white flex items-center justify-center overflow-hidden">
+            <img
+              className="w-full h-full"
+              src="/vsu-brand-logo.png"
+              alt="Visayas State University Seal"
+            />
+          </div>
+            <div className="w-20 h-20 bg-white flex items-center justify-center overflow-hidden">
+            <img
+              className="w-full h-full"
+              src="/ussc-logo.png"
+              alt="USSC Logo"
+            />
+          </div>
         </div>
         <div className="flex flex-col gap-1 mt-1">
           <h1 className="font-serif text-2xl font-black text-[#004225] uppercase tracking-wider">
-            VSU E-Passport
+            USSC E-Passport
           </h1>
           <p className="font-sans text-xs text-[#1A1A1A]/80 max-w-[220px] mx-auto leading-normal">
-            Your digital journey through Visayas State University.
+            Discover the iconic landmarks of Visayas State University!
           </p>
         </div>
       </header>

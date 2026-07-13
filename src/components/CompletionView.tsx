@@ -15,14 +15,14 @@ export default function CompletionView({ landmarks, stamps, userName, onReset }:
   const sortedLandmarks = [...landmarks].sort((a, b) => a.order - b.order);
 
   const handleDownload = () => {
-    // Elegant toast trigger representation
-    alert("✨ Preparing high-resolution VSU E-Passport certificate for: " + userName + ". Your download will begin shortly!");
+    // TODO
+    alert("✨ Preparing high-resolution USSC E-Passport certificate for: " + userName + ". Your download will begin shortly!");
   };
 
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'My VSU E-Passport Campus Tour',
+        title: 'My USSC E-Passport Campus Tour',
         text: `I completed my academic campus tour of Visayas State University! Stamped ${stamps.length} of ${landmarks.length} landmarks!`,
         url: window.location.href,
       }).catch(err => console.log(err));
@@ -47,7 +47,7 @@ export default function CompletionView({ landmarks, stamps, userName, onReset }:
           Restart
         </button>
         <h1 className="font-serif text-sm font-black italic tracking-wide text-white">
-          VSU CAMPUS TOUR
+          USSC E-PASSPORT
         </h1>
         <div className="w-14"></div>
       </header>
@@ -70,7 +70,7 @@ export default function CompletionView({ landmarks, stamps, userName, onReset }:
             Congratulations!
           </h2>
           <p className="font-sans text-[11px] text-[#1A1A1A]/70 mt-1 leading-normal">
-            Dear <span className="font-extrabold text-[#004225]">{userName}</span>, your university campus tour is complete.
+            Dear <span className="font-extrabold text-[#004225]">{userName}</span>, your VSU campus tour is complete.
           </p>
         </div>
 
@@ -132,7 +132,7 @@ export default function CompletionView({ landmarks, stamps, userName, onReset }:
           >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
             <Download className="w-3.5 h-3.5 text-[#CBA052]" />
-            <span>Download Certificate</span>
+            <span>Download Passport</span>
           </button>
           
           <button 

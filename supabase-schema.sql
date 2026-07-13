@@ -1,4 +1,4 @@
--- VSU E-Passport Supabase Postgres Schema and RLS Migration Script
+-- USSC E-Passport Supabase Postgres Schema and RLS Migration Script
 -- Run this script in the SQL Editor of your Supabase project.
 
 -- 1. Create Profiles Table

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Camera, MapPin, ArrowRight, BookOpen } from 'lucide-react';
+import { ShieldCheck, Camera, MapPin, ArrowRight, BookOpen, User } from 'lucide-react';
 
 interface ConsentModalProps {
   onAccept: () => void;
@@ -28,7 +28,7 @@ export default function ConsentModal({ onAccept, isSubmitting }: ConsentModalPro
       {/* Content Scrollable */}
       <div className="p-5 flex-1 overflow-y-auto flex flex-col gap-4 bg-transparent z-10">
         <p className="font-sans text-xs text-[#1A1A1A] leading-relaxed">
-          Welcome to the VSU E-Passport campus tour! To provide you with an interactive and verified stamp experience, we request permission for the following actions:
+          Welcome to the USSC E-Passport campus tour! To provide you with an interactive and verified stamp experience, we request permission for the following actions:
         </p>
 
         <ul className="flex flex-col gap-3">
@@ -46,12 +46,12 @@ export default function ConsentModal({ onAccept, isSubmitting }: ConsentModalPro
 
           <li className="flex items-start gap-3 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
             <div className="bg-[#004225]/10 rounded-xl p-2 text-[#004225] flex-shrink-0">
-              <MapPin className="w-4 h-4" />
+              <User className="w-4 h-4" />
             </div>
             <div>
-              <span className="font-sans font-bold text-xs text-[#1A1A1A] block">Location Validation</span>
+              <span className="font-sans font-bold text-xs text-[#1A1A1A] block">Account Verification</span>
               <span className="font-sans text-[10px] text-[#1A1A1A]/70 block mt-0.5 leading-normal">
-                We verify your device location to unlock stops automatically when you arrive at landmark coordinates.
+                We verify your accounts by accessing your email and student ID for authentication purposes.
               </span>
             </div>
           </li>
@@ -77,7 +77,7 @@ export default function ConsentModal({ onAccept, isSubmitting }: ConsentModalPro
             />
           </div>
           <span className="font-sans text-[10px] text-[#1A1A1A]/90 group-hover:text-[#004225] transition-colors leading-snug">
-            I agree to upload verification photos and share physical GPS coordinates for stamp validations.
+            I agree to upload verification photos and share other personal information for the purpose of tracking.
           </span>
         </label>
 
@@ -100,15 +100,6 @@ export default function ConsentModal({ onAccept, isSubmitting }: ConsentModalPro
               </>
             )}
           </button>
-          
-          <a 
-            href="#" 
-            onClick={(e) => e.preventDefault()}
-            className="font-mono text-[9px] text-[#004225] hover:text-[#CBA052] underline decoration-[#004225]/30 transition-all font-bold flex items-center gap-1 py-1"
-          >
-            <BookOpen className="w-3 h-3" />
-            View Privacy Policy
-          </a>
         </div>
       </div>
     </div>

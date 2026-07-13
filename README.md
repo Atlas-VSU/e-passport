@@ -1,4 +1,4 @@
-# VSU E-Passport
+# USSC E-Passport
 
 A mobile-and-tablet-only web app for the Visayas State University Supreme
 Student Council (USSC) campus tour. Students sign in with Google, move through

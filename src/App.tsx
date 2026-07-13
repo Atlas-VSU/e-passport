@@ -421,7 +421,7 @@ export default function App() {
           <div className="flex-1 flex flex-col items-center justify-center min-h-screen">
             <Loader2 className="w-10 h-10 text-[#CBA052] animate-spin mb-4" />
             <span className="font-mono text-xs uppercase text-white/60 tracking-widest">
-              Loading VSU E-Passport...
+              Loading USSC E-Passport...
             </span>
           </div>
         );
@@ -481,7 +481,7 @@ export default function App() {
 
                 <div className="text-center flex-1 mx-1">
                   <h1 className="text-[9px] font-bold uppercase tracking-widest text-[#CBA052]">Campus Tour</h1>
-                  <p className="text-base font-black italic tracking-wide text-white leading-none">VSU E-PASSPORT</p>
+                  <p className="text-base font-black italic tracking-wide text-white leading-none">USSC E-PASSPORT</p>
                 </div>
 
                 <button
@@ -615,7 +615,7 @@ export default function App() {
             Mobile Only
           </h1>
           <p className="font-sans text-sm text-white/80 leading-relaxed">
-            VSU E-Passport is designed for mobile and tablet devices. Please open this app on your smartphone or tablet to begin your campus tour.
+            USSC E-Passport is designed for mobile and tablet devices. Please open this app on your smartphone or tablet to begin your campus tour.
           </p>
         </div>
         <div className="flex items-center gap-2 font-mono text-[10px] text-white/40 uppercase tracking-widest border border-white/10 rounded-full px-4 py-2">

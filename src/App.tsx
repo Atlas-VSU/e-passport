@@ -13,7 +13,8 @@ import LoginView from './components/LoginView';
 import LandmarkDetailView from './components/LandmarkDetailView';
 import StampConfirmationView from './components/StampConfirmationView';
 import CompletionView from './components/CompletionView';
-import { Award, LogOut, Loader2, Landmark as LandmarkIcon } from 'lucide-react';
+import { getSupabase } from './lib/supabase/client';
+import { LogOut, Loader2 } from 'lucide-react';
 
 // Helper: safely parse JSON without throwing on HTML error pages
 async function safeJson(res: Response): Promise<any> {
@@ -21,7 +22,6 @@ async function safeJson(res: Response): Promise<any> {
   try {
     return JSON.parse(text);
   } catch {
-    // Server returned non-JSON (likely an HTML crash page)
     console.error('Non-JSON response from server:', text.slice(0, 300));
     return { error: `Server error (${res.status}). Check server logs.` };
   }
@@ -45,42 +45,89 @@ export default function App() {
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  // 1. Check session on load
+  // ──────────────────────────────────────────────────────────────────────────
+  // 1. Session check on load — use Supabase client-side SDK directly
+  // ──────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     async function checkSession() {
-      try {
-        const res = await fetch('/api/auth/session');
-        const data = await res.json();
-        
-        if (data?.user) {
-          setCurrentUser(data.user);
-          await loadUserStamps(data.user.id);
-          
-          if (!data.user.consent_given) {
-            setCurrentPage(Page.CONSENT);
-          } else {
-            setCurrentPage(Page.PASSPORT);
-          }
-        } else {
-          setCurrentPage(Page.LOGIN);
+      const supabase = getSupabase();
+
+      if (supabase) {
+        // Supabase persists session in localStorage — check for existing session
+        const { data: { session }, error } = await supabase.auth.getSession();
+
+        if (session?.user) {
+          await handleSessionUser(supabase, session.user);
+          return;
         }
-      } catch (err) {
-        console.error('Session check failed:', err);
-        setCurrentPage(Page.LOGIN);
       }
+
+      // No active session or Supabase not configured
+      setCurrentPage(Page.LOGIN);
     }
+
     checkSession();
   }, []);
 
-  // 2. Load user stamps
+  // ──────────────────────────────────────────────────────────────────────────
+  // Helper: fetch profile + stamps for a logged-in Supabase user
+  // ──────────────────────────────────────────────────────────────────────────
+  async function handleSessionUser(supabase: any, authUser: any) {
+    // Fetch profile from profiles table
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', authUser.id)
+      .single();
+
+    const userProfile: Profile = profile || {
+      id: authUser.id,
+      first_name: authUser.user_metadata?.first_name || null,
+      last_name: authUser.user_metadata?.last_name || null,
+      name: authUser.user_metadata?.full_name || authUser.email?.split('@')[0] || 'Student',
+      email: authUser.email,
+      student_id: authUser.user_metadata?.student_id || null,
+      avatar_url: null,
+      consent_given: false,
+      consent_timestamp: null,
+      created_at: new Date().toISOString(),
+    };
+
+    setCurrentUser(userProfile);
+    await loadUserStamps(authUser.id);
+
+    if (!userProfile.consent_given) {
+      setCurrentPage(Page.CONSENT);
+    } else {
+      setCurrentPage(Page.PASSPORT);
+    }
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 2. Load user stamps (via Express API — stamps are server-managed)
+  // ──────────────────────────────────────────────────────────────────────────
   const loadUserStamps = async (userId: string) => {
     try {
+      const supabase = getSupabase();
+      if (supabase) {
+        // Fetch directly from Supabase if available
+        const { data, error } = await supabase
+          .from('stamps')
+          .select('*')
+          .eq('user_id', userId);
+        if (!error && data) {
+          setStamps(data);
+          if (data.length === landmarks.length) {
+            setCurrentPage(Page.COMPLETION);
+          }
+          return;
+        }
+      }
+      // Fallback: Express API
       const res = await fetch(`/api/stamps?userId=${userId}`);
-      const data = await res.json();
+      const data = await safeJson(res);
       if (data?.stamps) {
         setStamps(data.stamps);
-        
-        // If all 6 landmarks are stamped, redirect immediately to completion
         if (data.stamps.length === landmarks.length) {
           setCurrentPage(Page.COMPLETION);
         }
@@ -90,28 +137,51 @@ export default function App() {
     }
   };
 
-  // 3. Handle plain email/password login
+  // ──────────────────────────────────────────────────────────────────────────
+  // 3. Login — Supabase client-side directly (no Express proxy)
+  // ──────────────────────────────────────────────────────────────────────────
   const handleLogin = async (email: string, password: string) => {
     setIsActionLoading(true);
     setAuthError(null);
     try {
+      const supabase = getSupabase();
+
+      if (supabase) {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+          const msg = error.message?.toLowerCase();
+          if (msg?.includes('invalid') || msg?.includes('credentials') || msg?.includes('email not confirmed')) {
+            setAuthError('Invalid email or password. Please try again.');
+          } else {
+            setAuthError(error.message || 'Login failed. Please try again.');
+          }
+          return;
+        }
+
+        if (data?.user) {
+          await handleSessionUser(supabase, data.user);
+          return;
+        }
+      }
+
+      // ── Fallback to Express API when Supabase not configured ──
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await safeJson(res);
-      
-      if (!res.ok || data?.error) {
-        setAuthError(data?.error || 'Login failed. Please check your credentials.');
+      const resData = await safeJson(res);
+
+      if (!res.ok || resData?.error) {
+        setAuthError(resData?.error || 'Login failed. Please check your credentials.');
         return;
       }
-      
-      if (data?.user) {
-        setCurrentUser(data.user);
-        await loadUserStamps(data.user.id);
-        
-        if (!data.user.consent_given) {
+
+      if (resData?.user) {
+        setCurrentUser(resData.user);
+        await loadUserStamps(resData.user.id);
+        if (!resData.user.consent_given) {
           setCurrentPage(Page.CONSENT);
         } else {
           setCurrentPage(Page.PASSPORT);
@@ -125,7 +195,9 @@ export default function App() {
     }
   };
 
-  // 4. Handle sign up (creates Supabase account)
+  // ──────────────────────────────────────────────────────────────────────────
+  // 4. Sign Up — Supabase client-side directly (no Express proxy)
+  // ──────────────────────────────────────────────────────────────────────────
   const handleSignUp = async (
     firstName: string,
     lastName: string,
@@ -136,21 +208,66 @@ export default function App() {
     setIsActionLoading(true);
     setAuthError(null);
     try {
+      const supabase = getSupabase();
+
+      if (supabase) {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              first_name: firstName,
+              last_name: lastName,
+              student_id: studentId,
+              full_name: `${firstName} ${lastName}`,
+            },
+          },
+        });
+
+        if (error) {
+          const msg = error.message?.toLowerCase();
+          if (msg?.includes('already registered') || msg?.includes('already exists') || msg?.includes('user already')) {
+            setAuthError('An account with this email already exists. Please sign in instead.');
+          } else {
+            setAuthError(error.message || 'Sign up failed. Please try again.');
+          }
+          return;
+        }
+
+        if (data?.user) {
+          // Upsert profile row with all custom fields
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            first_name: firstName,
+            last_name: lastName,
+            name: `${firstName} ${lastName}`,
+            email,
+            student_id: studentId,
+            avatar_url: null,
+            consent_given: false,
+          }, { onConflict: 'id' });
+
+          await handleSessionUser(supabase, data.user);
+          return;
+        }
+      }
+
+      // ── Fallback to Express API when Supabase not configured ──
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstName, lastName, studentId, email, password })
       });
-      const data = await safeJson(res);
-      
-      if (!res.ok || data?.error) {
-        setAuthError(data?.error || 'Sign up failed. Please try again.');
+      const resData = await safeJson(res);
+
+      if (!res.ok || resData?.error) {
+        setAuthError(resData?.error || 'Sign up failed. Please try again.');
         return;
       }
-      
-      if (data?.user) {
-        setCurrentUser(data.user);
-        await loadUserStamps(data.user.id);
+
+      if (resData?.user) {
+        setCurrentUser(resData.user);
+        await loadUserStamps(resData.user.id);
         setCurrentPage(Page.CONSENT);
       }
     } catch (err) {
@@ -161,18 +278,36 @@ export default function App() {
     }
   };
 
-  // 5. Handle Consent agreement
+  // ──────────────────────────────────────────────────────────────────────────
+  // 5. Consent agreement — write to Supabase profiles table directly
+  // ──────────────────────────────────────────────────────────────────────────
   const handleAcceptConsent = async () => {
     if (!currentUser) return;
     setIsActionLoading(true);
     try {
+      const supabase = getSupabase();
+      const timestamp = new Date().toISOString();
+
+      if (supabase) {
+        await supabase
+          .from('profiles')
+          .update({ consent_given: true, consent_timestamp: timestamp })
+          .eq('id', currentUser.id);
+
+        const updated = { ...currentUser, consent_given: true, consent_timestamp: timestamp };
+        setCurrentUser(updated);
+        setCurrentPage(Page.PASSPORT);
+        return;
+      }
+
+      // Fallback to Express API
       const res = await fetch('/api/auth/consent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: currentUser.id, consentGiven: true })
       });
-      const data = await res.json();
-      
+      const data = await safeJson(res);
+
       if (data?.profile) {
         setCurrentUser(data.profile);
         setCurrentPage(Page.PASSPORT);
@@ -184,11 +319,57 @@ export default function App() {
     }
   };
 
-  // 6. Handle Stamp capture photo confirmation
+  // ──────────────────────────────────────────────────────────────────────────
+  // 6. Stamp photo upload — use Supabase storage directly or Express fallback
+  // ──────────────────────────────────────────────────────────────────────────
   const handlePhotoConfirmed = async (base64Photo: string) => {
     if (!currentUser || !selectedLandmark) return;
     setIsActionLoading(true);
     try {
+      const supabase = getSupabase();
+
+      if (supabase) {
+        // Upload photo to Supabase Storage
+        const base64Data = base64Photo.replace(/^data:image\/\w+;base64,/, '');
+        const byteString = atob(base64Data);
+        const bytes = new Uint8Array(byteString.length);
+        for (let i = 0; i < byteString.length; i++) bytes[i] = byteString.charCodeAt(i);
+        const blob = new Blob([bytes], { type: 'image/jpeg' });
+
+        const storagePath = `${currentUser.id}/${selectedLandmark.id}.jpg`;
+        const { error: storageError } = await supabase.storage
+          .from('stamps')
+          .upload(storagePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+        let photoUrl = '';
+        if (!storageError) {
+          const { data: urlData } = supabase.storage.from('stamps').getPublicUrl(storagePath);
+          photoUrl = urlData?.publicUrl || '';
+        }
+
+        // Upsert stamp row
+        const { data: stampData, error: stampError } = await supabase
+          .from('stamps')
+          .upsert({
+            user_id: currentUser.id,
+            landmark_id: selectedLandmark.id,
+            photo_url: photoUrl || base64Photo,
+            stamped_at: new Date().toISOString(),
+          }, { onConflict: 'user_id,landmark_id' })
+          .select()
+          .single();
+
+        if (!stampError && stampData) {
+          setStamps(prev => {
+            const filtered = prev.filter(s => s.landmark_id !== selectedLandmark.id);
+            return [...filtered, stampData];
+          });
+          setCurrentPage(Page.STAMP_CONFIRMATION);
+          return;
+        }
+      }
+
+      // Fallback to Express API
       const res = await fetch('/api/stamps/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -198,16 +379,13 @@ export default function App() {
           photoBase64: base64Photo
         })
       });
-      const data = await res.json();
-      
+      const data = await safeJson(res);
+
       if (data?.stamp) {
-        // Append or replace new stamp
-        setStamps((prev) => {
-          const filtered = prev.filter((s) => s.landmark_id !== selectedLandmark.id);
+        setStamps(prev => {
+          const filtered = prev.filter(s => s.landmark_id !== selectedLandmark.id);
           return [...filtered, data.stamp];
         });
-        
-        // Show success slam down screen first!
         setCurrentPage(Page.STAMP_CONFIRMATION);
       }
     } catch (err) {
@@ -218,8 +396,14 @@ export default function App() {
     }
   };
 
-  // 7. Reset/Log out flow
-  const handleLogOut = () => {
+  // ──────────────────────────────────────────────────────────────────────────
+  // 7. Log out
+  // ──────────────────────────────────────────────────────────────────────────
+  const handleLogOut = async () => {
+    const supabase = getSupabase();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     setCurrentUser(null);
     setStamps([]);
     setSelectedLandmark(null);
@@ -227,14 +411,16 @@ export default function App() {
     setCurrentPage(Page.LOGIN);
   };
 
-  // View routing switcher
+  // ──────────────────────────────────────────────────────────────────────────
+  // View routing
+  // ──────────────────────────────────────────────────────────────────────────
   const renderCurrentView = () => {
     switch (currentPage) {
       case Page.LOADING:
         return (
-          <div className="flex-1 flex flex-col items-center justify-center min-h-[400px]">
-            <Loader2 className="w-10 h-10 text-[#013220] animate-spin mb-4" />
-            <span className="font-mono text-xs uppercase text-[#717973] tracking-widest">
+          <div className="flex-1 flex flex-col items-center justify-center min-h-screen">
+            <Loader2 className="w-10 h-10 text-[#CBA052] animate-spin mb-4" />
+            <span className="font-mono text-xs uppercase text-white/60 tracking-widest">
               Loading VSU E-Passport...
             </span>
           </div>
@@ -242,7 +428,7 @@ export default function App() {
 
       case Page.LOGIN:
         return (
-          <LoginView 
+          <LoginView
             onLogin={handleLogin}
             onSignUp={handleSignUp}
             isLoggingIn={isActionLoading}
@@ -252,7 +438,7 @@ export default function App() {
 
       case Page.CONSENT:
         return (
-          <ConsentModal 
+          <ConsentModal
             onAccept={handleAcceptConsent}
             isSubmitting={isActionLoading}
           />
@@ -260,21 +446,21 @@ export default function App() {
 
       case Page.PASSPORT: {
         const nextLandmark = landmarks.find(lm => !stamps.some(s => s.landmark_id === lm.id)) || landmarks[landmarks.length - 1];
-        
+
         return (
           <div className="flex flex-col w-full h-screen bg-[#FDF9F0] relative overflow-hidden">
             {/* Ambient paper texture overlay */}
             <div className="absolute inset-0 bg-radial-gradient(circle_at_2px_2px,rgba(0,66,37,0.02)_1px,transparent_0) [background-size:16px_16px] pointer-events-none z-0" />
 
-            {/* Top Navigation Bar with Green Background & Golden Accents */}
+            {/* Top Navigation Bar */}
             <div className="bg-[#004225] p-5 pb-7 text-white rounded-b-[40px] shadow-lg relative z-10 flex flex-col gap-4">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-[#CBA052] border-2 border-white flex items-center justify-center overflow-hidden shadow-md flex-shrink-0">
                     {currentUser?.avatar_url ? (
-                      <img 
-                        src={currentUser.avatar_url} 
-                        alt={currentUser.name || 'User'} 
+                      <img
+                        src={currentUser.avatar_url}
+                        alt={currentUser.name || 'User'}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -298,7 +484,7 @@ export default function App() {
                   <p className="text-base font-black italic tracking-wide text-white leading-none">VSU E-PASSPORT</p>
                 </div>
 
-                <button 
+                <button
                   onClick={handleLogOut}
                   aria-label="Sign Out"
                   className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all shadow-sm flex-shrink-0"
@@ -307,8 +493,7 @@ export default function App() {
                 </button>
               </div>
 
-              {/* Progress Tracker Card directly embedded in the header block */}
-              <ProgressTracker 
+              <ProgressTracker
                 stampsCount={stamps.length}
                 totalCount={landmarks.length}
               />
@@ -316,7 +501,7 @@ export default function App() {
 
             {/* Journey Scrollable Canvas */}
             <div className="flex-1 overflow-y-auto px-4 select-none scrollbar-thin z-10 relative">
-              <PassportRoad 
+              <PassportRoad
                 landmarks={landmarks}
                 stamps={stamps}
                 onSelectLandmark={(lm) => {
@@ -326,14 +511,14 @@ export default function App() {
               />
             </div>
 
-            {/* Elegant Next up Footer bar matching the Design HTML */}
+            {/* Next up Footer */}
             {nextLandmark && (
               <div className="p-4 px-6 bg-white border-t border-gray-100 flex items-center justify-between z-10 rounded-t-[32px] shadow-inner relative">
                 <div className="flex-1 text-left overflow-hidden mr-2">
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Next up</p>
                   <p className="font-black text-[#004225] text-xs md:text-sm truncate">{nextLandmark.name}</p>
                 </div>
-                <button 
+                <button
                   onClick={() => {
                     setSelectedLandmark(nextLandmark);
                     setCurrentPage(Page.LANDMARK_DETAIL);
@@ -352,7 +537,7 @@ export default function App() {
       case Page.LANDMARK_DETAIL:
         if (!selectedLandmark) return null;
         return (
-          <LandmarkDetailView 
+          <LandmarkDetailView
             landmark={selectedLandmark}
             stamp={stamps.find(s => s.landmark_id === selectedLandmark.id)}
             isUploading={isActionLoading}
@@ -364,12 +549,10 @@ export default function App() {
       case Page.STAMP_CONFIRMATION:
         if (!selectedLandmark) return null;
         return (
-          <StampConfirmationView 
+          <StampConfirmationView
             landmark={selectedLandmark}
             onContinue={() => {
-              // Refresh stamps logic and verify completion
-              const nextStamps = stamps;
-              if (nextStamps.length === landmarks.length) {
+              if (stamps.length === landmarks.length) {
                 setCurrentPage(Page.COMPLETION);
               } else {
                 setCurrentPage(Page.PASSPORT);
@@ -380,14 +563,12 @@ export default function App() {
 
       case Page.COMPLETION:
         return (
-          <CompletionView 
+          <CompletionView
             landmarks={landmarks}
             stamps={stamps}
             userName={currentUser?.first_name || currentUser?.name || 'Gladiator Visitor'}
             onReset={() => {
-              // Allow restarting to try again
-              if (confirm("Are you sure you want to restart your campus tour? This will reset your stamp collection.")) {
-                fetch('/api/stamps/upload', { method: 'DELETE' }).catch(() => {});
+              if (confirm('Are you sure you want to restart your campus tour? This will reset your stamp collection.')) {
                 setStamps([]);
                 setCurrentPage(Page.PASSPORT);
               }
@@ -411,8 +592,8 @@ export default function App() {
       <div className="hidden lg:flex min-h-screen w-full flex-col items-center justify-center bg-[#004225] text-white gap-6 p-8">
         <div className="w-20 h-20 rounded-full bg-[#CBA052] flex items-center justify-center shadow-xl">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-[#004225]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-            <line x1="12" y1="18" x2="12.01" y2="18"/>
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+            <line x1="12" y1="18" x2="12.01" y2="18" />
           </svg>
         </div>
         <div className="text-center max-w-sm">

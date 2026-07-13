@@ -34,11 +34,11 @@ CREATE POLICY "Users can update their own profile row"
   FOR UPDATE
   USING (auth.uid() = id);
 
--- Allow the service role to insert profiles (used by the server-side signup endpoint)
-CREATE POLICY "Service role can insert profiles"
+-- Allow authenticated users to insert their own profile row (used by client-side signup)
+CREATE POLICY "Users can insert their own profile row"
   ON public.profiles
   FOR INSERT
-  WITH CHECK (true);
+  WITH CHECK (auth.uid() = id);
 
 -- 2. Create Stamps Table
 CREATE TABLE IF NOT EXISTS public.stamps (

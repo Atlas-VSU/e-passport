@@ -5,8 +5,9 @@ import { createServer as createViteServer } from 'vite';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
-// Load environment variables
+// Load environment variables — .env.local overrides .env (mirrors Vite's convention)
 dotenv.config();
+dotenv.config({ path: '.env.local', override: true });
 
 const app = express();
 const PORT = 3000;
@@ -24,7 +25,7 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 // Serve uploaded images statically
 app.use('/public/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
-// Initialize Supabase Client (Lazy / Guarded to prevent startup crash)
+// Initialize Supabase Client (service role for server-side operations)
 let supabaseAdmin: SupabaseClient | null = null;
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
@@ -45,26 +46,35 @@ if (supabaseUrl && supabaseServiceKey) {
   console.warn('SUPABASE_URL or keys are missing from environment. Using local server state.');
 }
 
-// Memory databases for local fallback
-let localProfiles: Record<string, any> = {
-  'local-guest-user': {
-    id: 'local-guest-user',
-    name: 'Gladiator Visitor',
-    email: 'guest@vsu.edu.ph',
-    avatar_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDp2sBzLI1xPXv6z2EFg4v-JE_X6la7unIVAMQnw7cqVXBeyK-Au3VpRS4T7RQ7GVjjVK0yI8RJ_4X-BXafhexkK9hxwSxKaOxIdUZlsoENaNpY3xMF62WDVCjJzFIppAxom80idElG7DfkvGaqHoI2tmISZjqXX5_ouxxjU4SBQQ63OWjzcKJZMM7S0Np8n_Fg8mFiEmRhoOkc1MOsk6CXXiTA5f715hqQOjztMqWW01aBRKEDKH_ZRA',
+// =========================================================================
+// LOCAL FALLBACK MEMORY STORES
+// =========================================================================
+
+// Stores profiles in memory when Supabase is not configured
+let localProfiles: Record<string, any> = {};
+// Stores stamps in memory when Supabase is not configured
+let localStamps: Record<string, any[]> = {};
+
+// Current session user (kept in memory for local mode)
+let currentSessionUser: any = null;
+
+// =========================================================================
+// HELPER: Build a profile object from Supabase data
+// =========================================================================
+function buildProfile(userId: string, meta: Record<string, any>, email: string): Record<string, any> {
+  return {
+    id: userId,
+    first_name: meta.first_name || null,
+    last_name: meta.last_name || null,
+    name: `${meta.first_name || ''} ${meta.last_name || ''}`.trim() || 'VSU Student',
+    email,
+    student_id: meta.student_id || null,
+    avatar_url: null,
     consent_given: false,
     consent_timestamp: null,
     created_at: new Date().toISOString()
-  }
-};
-
-let localStamps: Record<string, any[]> = {
-  'local-guest-user': []
-};
-
-// Current Session State
-// Since we are running in an iframe with local testing, we can simulate an active session
-let currentSessionUser: any = localProfiles['local-guest-user'];
+  };
+}
 
 // =========================================================================
 // API ENDPOINTS
@@ -77,41 +87,171 @@ app.get('/api/health', (req, res) => {
 
 // 2. Auth Session endpoint (Get current user state)
 app.get('/api/auth/session', async (req, res) => {
-  // If we have a real session token or header, we would verify it with Supabase.
-  // For the AI Studio preview environment, we keep the active session in currentSessionUser.
-  res.json({ user: currentSessionUser });
+  res.json({ user: currentSessionUser || null });
 });
 
-// 3. Simulates login directly or sets the active user
-app.post('/api/auth/login', (req, res) => {
-  const { email, name, avatarUrl } = req.body;
-  if (!email) {
-    return res.status(400).json({ error: 'Email is required' });
+// 3. Sign Up — creates a new Supabase Auth user and profile row
+app.post('/api/auth/signup', async (req, res) => {
+  const { firstName, lastName, studentId, email, password } = req.body;
+
+  if (!firstName || !lastName || !studentId || !email || !password) {
+    return res.status(400).json({ error: 'All fields are required.' });
   }
 
-  const id = email.replace(/[^a-zA-Z0-9]/g, '-');
-  
-  if (!localProfiles[id]) {
-    localProfiles[id] = {
-      id,
-      name: name || 'VSU Student',
-      email: email,
-      avatar_url: avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
-      consent_given: false,
-      consent_timestamp: null,
-      created_at: new Date().toISOString()
-    };
+  if (password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters.' });
   }
 
-  currentSessionUser = localProfiles[id];
-  if (!localStamps[id]) {
-    localStamps[id] = [];
+  // If Supabase is configured, create a real account
+  if (supabaseAdmin) {
+    try {
+      // Create the auth user via Supabase Admin
+      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true, // auto-confirm so the user can log in immediately
+        user_metadata: {
+          first_name: firstName,
+          last_name: lastName,
+          student_id: studentId,
+          full_name: `${firstName} ${lastName}`
+        }
+      });
+
+      if (authError) {
+        console.error('Supabase auth signup error:', authError);
+        // Handle common errors with friendly messages
+        if (authError.message?.includes('already registered') || authError.message?.includes('already exists')) {
+          return res.status(409).json({ error: 'An account with this email already exists. Please sign in instead.' });
+        }
+        return res.status(400).json({ error: authError.message || 'Failed to create account.' });
+      }
+
+      if (!authData?.user) {
+        return res.status(500).json({ error: 'User creation returned empty response.' });
+      }
+
+      // Upsert the profile row (in case the trigger didn't fire or needs extra fields)
+      const { data: profileData, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+          id: authData.user.id,
+          first_name: firstName,
+          last_name: lastName,
+          name: `${firstName} ${lastName}`,
+          email,
+          student_id: studentId,
+          avatar_url: null,
+          consent_given: false
+        }, { onConflict: 'id' })
+        .select()
+        .single();
+
+      if (profileError) {
+        console.error('Error upserting profile in Supabase:', profileError);
+      }
+
+      const profile = profileData || buildProfile(authData.user.id, { first_name: firstName, last_name: lastName, student_id: studentId }, email);
+      currentSessionUser = profile;
+      if (!localStamps[profile.id]) localStamps[profile.id] = [];
+
+      return res.status(201).json({ user: profile, source: 'supabase' });
+    } catch (err) {
+      console.error('Signup error:', err);
+      return res.status(500).json({ error: 'An unexpected error occurred. Please try again.' });
+    }
   }
 
-  res.json({ user: currentSessionUser });
+  // ── LOCAL FALLBACK (no Supabase configured) ──────────────────────────────
+  const existingUser = Object.values(localProfiles).find((p: any) => p.email === email);
+  if (existingUser) {
+    return res.status(409).json({ error: 'An account with this email already exists. Please sign in instead.' });
+  }
+
+  const localId = `local-${Date.now()}`;
+  const newProfile = {
+    ...buildProfile(localId, { first_name: firstName, last_name: lastName, student_id: studentId }, email),
+    // Store password hash equivalent for local auth
+    _password: password
+  };
+
+  localProfiles[localId] = newProfile;
+  localStamps[localId] = [];
+  currentSessionUser = { ...newProfile, _password: undefined };
+
+  return res.status(201).json({ user: currentSessionUser, source: 'local' });
 });
 
-// 4. Consent agreement endpoint
+// 4. Login — authenticates with email and password
+app.post('/api/auth/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required.' });
+  }
+
+  // If Supabase is configured, use Supabase Auth
+  if (supabaseAdmin) {
+    try {
+      // Sign in with password using Supabase Auth
+      const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (authError) {
+        console.error('Supabase login error:', authError);
+        if (authError.message?.toLowerCase().includes('invalid') || authError.message?.toLowerCase().includes('credentials')) {
+          return res.status(401).json({ error: 'Invalid email or password. Please try again.' });
+        }
+        return res.status(401).json({ error: authError.message || 'Login failed.' });
+      }
+
+      if (!authData?.user) {
+        return res.status(401).json({ error: 'Login failed. Please try again.' });
+      }
+
+      // Fetch profile from profiles table
+      const { data: profileData, error: profileError } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .eq('id', authData.user.id)
+        .single();
+
+      if (profileError || !profileData) {
+        console.error('Profile fetch error after login:', profileError);
+        // Build a basic profile from auth metadata if profile row not found
+        const meta = authData.user.user_metadata || {};
+        const fallbackProfile = buildProfile(authData.user.id, meta, email);
+        currentSessionUser = fallbackProfile;
+        if (!localStamps[fallbackProfile.id]) localStamps[fallbackProfile.id] = [];
+        return res.json({ user: fallbackProfile, source: 'supabase-auth' });
+      }
+
+      currentSessionUser = profileData;
+      if (!localStamps[profileData.id]) localStamps[profileData.id] = [];
+      return res.json({ user: profileData, source: 'supabase' });
+    } catch (err) {
+      console.error('Login error:', err);
+      return res.status(500).json({ error: 'An unexpected error occurred. Please try again.' });
+    }
+  }
+
+  // ── LOCAL FALLBACK ─────────────────────────────────────────────────────
+  const matchedUser = Object.values(localProfiles).find(
+    (p: any) => p.email === email && p._password === password
+  ) as any;
+
+  if (!matchedUser) {
+    return res.status(401).json({ error: 'Invalid email or password.' });
+  }
+
+  currentSessionUser = { ...matchedUser, _password: undefined };
+  if (!localStamps[matchedUser.id]) localStamps[matchedUser.id] = [];
+  return res.json({ user: currentSessionUser, source: 'local' });
+});
+
+// 5. Consent agreement endpoint
 app.post('/api/auth/consent', async (req, res) => {
   const { userId, consentGiven } = req.body;
   if (!userId) {
@@ -150,16 +290,20 @@ app.post('/api/auth/consent', async (req, res) => {
   if (localProfiles[userId]) {
     localProfiles[userId].consent_given = consentGiven;
     localProfiles[userId].consent_timestamp = timestamp;
+  } else if (currentSessionUser && currentSessionUser.id === userId) {
+    currentSessionUser.consent_given = consentGiven;
+    currentSessionUser.consent_timestamp = timestamp;
+    localProfiles[userId] = { ...currentSessionUser };
   }
   
   if (currentSessionUser && currentSessionUser.id === userId) {
-    currentSessionUser = localProfiles[userId];
+    currentSessionUser = { ...currentSessionUser, consent_given: consentGiven, consent_timestamp: timestamp };
   }
 
-  res.json({ profile: localProfiles[userId], source: 'local' });
+  res.json({ profile: currentSessionUser, source: 'local' });
 });
 
-// 5. Get stamps for the current user
+// 6. Get stamps for the current user
 app.get('/api/stamps', async (req, res) => {
   const userId = req.query.userId as string;
   if (!userId) {
@@ -188,7 +332,7 @@ app.get('/api/stamps', async (req, res) => {
   res.json({ stamps: userStamps, source: 'local' });
 });
 
-// 6. Upload stamp photo & insert stamp row
+// 7. Upload stamp photo & insert stamp row
 app.post('/api/stamps/upload', async (req, res) => {
   const { userId, landmarkId, photoBase64 } = req.body;
   
@@ -281,111 +425,6 @@ app.post('/api/stamps/upload', async (req, res) => {
   localStamps[userId].push(newStamp);
 
   res.json({ stamp: newStamp, source: 'local' });
-});
-
-// 7. Get OAuth URL
-app.get('/api/auth/url', (req, res) => {
-  const originUrl = process.env.APP_URL || `http://localhost:${PORT}`;
-  const redirectUri = `${originUrl}/auth/callback`;
-
-  if (!supabaseUrl) {
-    // If Supabase is not configured, we return a mock authorization URL that directly triggers success
-    return res.json({
-      url: `${originUrl}/auth/callback?mock=true&email=visitor@vsu.edu.ph&name=Visayas%20Explorer`
-    });
-  }
-
-  // If Supabase is active, fetch actual Google Sign In authorization URL
-  const authUrl = `${supabaseUrl}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUri)}`;
-  res.json({ url: authUrl });
-});
-
-// 8. OAuth Callback Handler
-app.get(['/auth/callback', '/auth/callback/'], async (req, res) => {
-  const { code, mock, email, name } = req.query;
-
-  let userData = {
-    id: 'supabase-user',
-    name: (name as string) || 'VSU Student',
-    email: (email as string) || 'student@vsu.edu.ph',
-    avatar_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200',
-    consent_given: false,
-    consent_timestamp: null,
-    created_at: new Date().toISOString()
-  };
-
-  if (mock === 'true') {
-    const id = userData.email.replace(/[^a-zA-Z0-9]/g, '-');
-    userData.id = id;
-    if (!localProfiles[id]) {
-      localProfiles[id] = userData;
-    }
-    currentSessionUser = localProfiles[id];
-  } else if (supabaseAdmin && code) {
-    try {
-      // Direct session exchange is typically managed by standard client libraries or cookies.
-      // Since it is popup-based, we extract session or let browser exchange tokens.
-      console.log('Received auth callback with code:', code);
-    } catch (err) {
-      console.error('OAuth token exchange failure:', err);
-    }
-  }
-
-  // Send success message to parent window and close popup
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <title>VSU E-Passport Authentication</title>
-      <style>
-        body {
-          font-family: 'Be Vietnam Pro', sans-serif;
-          background: #fff8f5;
-          color: #001b0f;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          height: 100vh;
-          margin: 0;
-          text-align: center;
-        }
-        .spinner {
-          border: 4px solid #f5ece7;
-          border-top: 4px solid #001b0f;
-          border-radius: 50%;
-          width: 40px;
-          height: 40px;
-          animation: spin 1s linear infinite;
-          margin-bottom: 20px;
-        }
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="spinner"></div>
-      <h2>Logging you into VSU E-Passport...</h2>
-      <p>This window will close automatically once the authentication completes.</p>
-      <script>
-        if (window.opener) {
-          window.opener.postMessage({ 
-            type: 'OAUTH_AUTH_SUCCESS', 
-            user: ${JSON.stringify(userData)} 
-          }, '*');
-          setTimeout(() => {
-            window.close();
-          }, 1000);
-        } else {
-          window.location.href = '/';
-        }
-      </script>
-    </body>
-    </html>
-  `);
 });
 
 // =========================================================================

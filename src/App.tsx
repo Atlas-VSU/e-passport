@@ -31,6 +31,7 @@ export default function App() {
   const [stamps, setStamps] = useState<Stamp[]>([]);
   const [selectedLandmark, setSelectedLandmark] = useState<Landmark | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // 1. Check session on load
   useEffect(() => {
@@ -77,16 +78,22 @@ export default function App() {
     }
   };
 
-  // 3. Handle login action
-  const handleLogin = async (email: string, name: string) => {
+  // 3. Handle plain email/password login
+  const handleLogin = async (email: string, password: string) => {
     setIsActionLoading(true);
+    setAuthError(null);
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name })
+        body: JSON.stringify({ email, password })
       });
       const data = await res.json();
+      
+      if (!res.ok || data?.error) {
+        setAuthError(data?.error || 'Login failed. Please check your credentials.');
+        return;
+      }
       
       if (data?.user) {
         setCurrentUser(data.user);
@@ -95,74 +102,52 @@ export default function App() {
         if (!data.user.consent_given) {
           setCurrentPage(Page.CONSENT);
         } else {
-          // Check if already completed
-          const userStamps = stamps;
-          if (userStamps.length === landmarks.length) {
-            setCurrentPage(Page.COMPLETION);
-          } else {
-            setCurrentPage(Page.PASSPORT);
-          }
+          setCurrentPage(Page.PASSPORT);
         }
       }
     } catch (err) {
       console.error('Login failed:', err);
-      alert('Failed to connect. Please try again.');
+      setAuthError('Failed to connect. Please try again.');
     } finally {
       setIsActionLoading(false);
     }
   };
 
-  // 4. Handle popup Google Sign In
-  const handleGoogleLogin = async () => {
+  // 4. Handle sign up (creates Supabase account)
+  const handleSignUp = async (
+    firstName: string,
+    lastName: string,
+    studentId: string,
+    email: string,
+    password: string
+  ) => {
     setIsActionLoading(true);
+    setAuthError(null);
     try {
-      const res = await fetch('/api/auth/url');
-      const { url } = await res.json();
-
-      // Open Google OAuth Provider URL directly in popup
-      const authWindow = window.open(
-        url,
-        'vsu_oauth_popup',
-        'width=500,height=600'
-      );
-
-      if (!authWindow) {
-        alert('Please allow popups to sign in with Google.');
-        setIsActionLoading(false);
+      const res = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstName, lastName, studentId, email, password })
+      });
+      const data = await res.json();
+      
+      if (!res.ok || data?.error) {
+        setAuthError(data?.error || 'Sign up failed. Please try again.');
+        return;
+      }
+      
+      if (data?.user) {
+        setCurrentUser(data.user);
+        await loadUserStamps(data.user.id);
+        setCurrentPage(Page.CONSENT);
       }
     } catch (err) {
-      console.error('OAuth initiation failed:', err);
-      alert('OAuth initialization error.');
+      console.error('Sign up failed:', err);
+      setAuthError('Failed to create account. Please try again.');
+    } finally {
       setIsActionLoading(false);
     }
   };
-
-  // Listen for message events from popup
-  useEffect(() => {
-    const handleOAuthMessage = async (event: MessageEvent) => {
-      const origin = event.origin;
-      // Allow local and standard run.app origins
-      if (!origin.endsWith('.run.app') && !origin.includes('localhost') && !origin.includes('127.0.0.1')) {
-        return;
-      }
-
-      if (event.data?.type === 'OAUTH_AUTH_SUCCESS' && event.data?.user) {
-        const userObj = event.data.user;
-        setCurrentUser(userObj);
-        await loadUserStamps(userObj.id);
-
-        if (!userObj.consent_given) {
-          setCurrentPage(Page.CONSENT);
-        } else {
-          setCurrentPage(Page.PASSPORT);
-        }
-        setIsActionLoading(false);
-      }
-    };
-
-    window.addEventListener('message', handleOAuthMessage);
-    return () => window.removeEventListener('message', handleOAuthMessage);
-  }, []);
 
   // 5. Handle Consent agreement
   const handleAcceptConsent = async () => {
@@ -226,6 +211,7 @@ export default function App() {
     setCurrentUser(null);
     setStamps([]);
     setSelectedLandmark(null);
+    setAuthError(null);
     setCurrentPage(Page.LOGIN);
   };
 
@@ -246,8 +232,9 @@ export default function App() {
         return (
           <LoginView 
             onLogin={handleLogin}
-            onGoogleLogin={handleGoogleLogin}
+            onSignUp={handleSignUp}
             isLoggingIn={isActionLoading}
+            authError={authError}
           />
         );
 
@@ -263,7 +250,7 @@ export default function App() {
         const nextLandmark = landmarks.find(lm => !stamps.some(s => s.landmark_id === lm.id)) || landmarks[landmarks.length - 1];
         
         return (
-          <div className="flex flex-col w-full max-w-[380px] h-[720px] mx-auto bg-[#FDF9F0] rounded-[48px] shadow-2xl border-[8px] border-[#1A1A1A] relative overflow-hidden my-4">
+          <div className="flex flex-col w-full h-screen bg-[#FDF9F0] relative overflow-hidden">
             {/* Ambient paper texture overlay */}
             <div className="absolute inset-0 bg-radial-gradient(circle_at_2px_2px,rgba(0,66,37,0.02)_1px,transparent_0) [background-size:16px_16px] pointer-events-none z-0" />
 
@@ -280,16 +267,16 @@ export default function App() {
                       />
                     ) : (
                       <div className="text-[#004225] font-black text-sm">
-                        {currentUser?.name ? currentUser.name[0].toUpperCase() : 'E'}
+                        {currentUser?.first_name ? currentUser.first_name[0].toUpperCase() : currentUser?.name ? currentUser.name[0].toUpperCase() : 'E'}
                       </div>
                     )}
                   </div>
                   <div className="flex flex-col text-left">
                     <span className="font-sans text-xs font-black text-white truncate max-w-[80px]">
-                      {currentUser?.name || 'Explorer'}
+                      {currentUser?.first_name || currentUser?.name || 'Explorer'}
                     </span>
                     <span className="font-mono text-[8px] text-[#CBA052] uppercase tracking-wider font-extrabold">
-                      {currentUser?.id.includes('visitor') ? 'Visitor' : 'Student'}
+                      {currentUser?.student_id ? `ID: ${currentUser.student_id}` : 'Student'}
                     </span>
                   </div>
                 </div>
@@ -384,7 +371,7 @@ export default function App() {
           <CompletionView 
             landmarks={landmarks}
             stamps={stamps}
-            userName={currentUser?.name || 'Gladiator Visitor'}
+            userName={currentUser?.first_name || currentUser?.name || 'Gladiator Visitor'}
             onReset={() => {
               // Allow restarting to try again
               if (confirm("Are you sure you want to restart your campus tour? This will reset your stamp collection.")) {
@@ -402,8 +389,34 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#004225] font-sans text-[#1A1A1A] antialiased p-3 md:p-6">
-      {renderCurrentView()}
-    </div>
+    <>
+      {/* ── Mobile / Tablet: full screen app ── */}
+      <div className="lg:hidden min-h-screen w-full flex flex-col bg-[#004225] font-sans text-[#1A1A1A] antialiased">
+        {renderCurrentView()}
+      </div>
+
+      {/* ── Desktop: not supported message ── */}
+      <div className="hidden md:flex min-h-screen w-full flex-col items-center justify-center bg-[#004225] text-white gap-6 p-8">
+        <div className="w-20 h-20 rounded-full bg-[#CBA052] flex items-center justify-center shadow-xl">
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-[#004225]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+        </div>
+        <div className="text-center max-w-sm">
+          <h1 className="font-serif text-2xl font-black text-[#CBA052] uppercase tracking-widest mb-2">
+            Mobile Only
+          </h1>
+          <p className="font-sans text-sm text-white/80 leading-relaxed">
+            VSU E-Passport is designed for mobile and tablet devices. Please open this app on your smartphone or tablet to begin your campus tour.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 font-mono text-[10px] text-white/40 uppercase tracking-widest border border-white/10 rounded-full px-4 py-2">
+          <span>Visayas State University</span>
+          <span>·</span>
+          <span>E-Passport</span>
+        </div>
+      </div>
+    </>
   );
 }

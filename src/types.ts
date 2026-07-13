@@ -5,8 +5,11 @@
 
 export interface Profile {
   id: string;
+  first_name: string | null;
+  last_name: string | null;
   name: string | null;
   email: string | null;
+  student_id: string | null;
   avatar_url: string | null;
   consent_given: boolean;
   consent_timestamp: string | null;

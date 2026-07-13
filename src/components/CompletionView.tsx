@@ -32,7 +32,7 @@ export default function CompletionView({ landmarks, stamps, userName, onReset }:
   };
 
   return (
-    <div className="w-full max-w-[380px] h-[720px] mx-auto bg-[#FDF9F0] rounded-[48px] shadow-2xl border-[8px] border-[#1A1A1A] flex flex-col relative overflow-hidden my-4">
+    <div className="w-full h-screen bg-[#FDF9F0] flex flex-col relative overflow-hidden">
       {/* Texture Layer */}
       <div className="absolute inset-0 bg-radial-gradient(circle_at_2px_2px,rgba(0,66,37,0.02)_1px,transparent_0) [background-size:16px_16px] pointer-events-none z-0" />
 

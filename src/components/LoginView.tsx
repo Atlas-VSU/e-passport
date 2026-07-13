@@ -1,45 +1,75 @@
 import React, { useState } from 'react';
-import { LogIn, Key, Mail, Eye, EyeOff, ShieldCheck, HelpCircle, ArrowRight } from 'lucide-react';
+import { LogIn, Key, Mail, Eye, EyeOff, ShieldCheck, UserPlus, User, Hash, ArrowRight } from 'lucide-react';
+
+type AuthMode = 'login' | 'signup';
 
 interface LoginViewProps {
-  onLogin: (email: string, name: string) => void;
-  onGoogleLogin: () => void;
+  onLogin: (email: string, password: string) => void;
+  onSignUp: (firstName: string, lastName: string, studentId: string, email: string, password: string) => void;
   isLoggingIn: boolean;
+  authError: string | null;
 }
 
-export default function LoginView({ onLogin, onGoogleLogin, isLoggingIn }: LoginViewProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [guestName, setGuestName] = useState('');
-  const [isVisitorMode, setIsVisitorMode] = useState(false);
+export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }: LoginViewProps) {
+  const [mode, setMode] = useState<AuthMode>('login');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Login fields
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+
+  // Sign Up fields
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [studentId, setStudentId] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupConfirm, setSignupConfirm] = useState('');
+  const [showSignupPassword, setShowSignupPassword] = useState(false);
+  const [signupError, setSignupError] = useState('');
+
+  const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    onLogin(email, guestName || email.split('@')[0]);
+    if (!loginEmail || !loginPassword) return;
+    onLogin(loginEmail, loginPassword);
   };
 
-  const handleVisitorSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!guestName) return;
-    onLogin(`${guestName.toLowerCase().replace(/\s+/g, '-')}@visitor.vsu.edu.ph`, guestName);
+    setSignupError('');
+    if (!firstName || !lastName || !studentId || !signupEmail || !signupPassword) return;
+    if (signupPassword !== signupConfirm) {
+      setSignupError('Passwords do not match.');
+      return;
+    }
+    if (signupPassword.length < 6) {
+      setSignupError('Password must be at least 6 characters.');
+      return;
+    }
+    onSignUp(firstName, lastName, studentId, signupEmail, signupPassword);
   };
+
+  const inputClass =
+    'w-full font-sans text-[#1A1A1A] pb-2 pl-7 pr-2 bg-transparent text-xs md:text-sm placeholder:text-gray-400 outline-none border-none focus:ring-0';
+  const labelClass =
+    'font-mono text-[9px] text-[#004225] font-extrabold uppercase tracking-widest';
+  const iconWrap =
+    'flex items-center relative border-b-2 border-[#CBA052]/50 focus-within:border-[#004225] transition-all';
 
   return (
-    <div className="w-full max-w-[380px] h-[720px] mx-auto bg-[#FDF9F0] rounded-[48px] shadow-2xl border-[8px] border-[#1A1A1A] p-6 md:p-8 relative overflow-y-auto flex flex-col gap-6 my-4">
-      {/* Decorative Stamp Slot (top right) */}
+    <div className="w-full min-h-screen bg-[#FDF9F0] p-6 relative overflow-y-auto flex flex-col gap-5">
+      {/* Decorative Stamp Slot */}
       <div className="absolute top-4 right-4 w-12 h-12 border-2 border-dashed border-[#CBA052]/40 rounded-md flex items-center justify-center opacity-60">
         <ShieldCheck className="text-[#CBA052] w-5 h-5" />
       </div>
 
-      {/* Header section with University Seal */}
+      {/* Header */}
       <header className="text-center flex flex-col items-center gap-3 mt-4">
-        <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center border-4 border-[#CBA052] shadow-inner overflow-hidden">
-          <img 
-            className="w-full h-full object-cover" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp2sBzLI1xPXv6z2EFg4v-JE_X6la7unIVAMQnw7cqVXBeyK-Au3VpRS4T7RQ7GVjjVK0yI8RJ_4X-BXafhexkK9hxwSxKaOxIdUZlsoENaNpY3xMF62WDVCjJzFIppAxom80idElG7DfkvGaqHoI2tmISZjqXX5_ouxxjU4SBQQ63OWjzcKJZMM7S0Np8n_Fg8mFiEmRhoOkc1MOsk6CXXiTA5f715hqQOjztMqWW01aBRKEDKH_ZRA" 
-            alt="Visayas State University Seal" 
+        <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center border-4 border-[#CBA052] shadow-inner overflow-hidden">
+          <img
+            className="w-full h-full object-cover"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDp2sBzLI1xPXv6z2EFg4v-JE_X6la7unIVAMQnw7cqVXBeyK-Au3VpRS4T7RQ7GVjjVK0yI8RJ_4X-BXafhexkK9hxwSxKaOxIdUZlsoENaNpY3xMF62WDVCjJzFIppAxom80idElG7DfkvGaqHoI2tmISZjqXX5_ouxxjU4SBQQ63OWjzcKJZMM7S0Np8n_Fg8mFiEmRhoOkc1MOsk6CXXiTA5f715hqQOjztMqWW01aBRKEDKH_ZRA"
+            alt="Visayas State University Seal"
           />
         </div>
         <div className="flex flex-col gap-1 mt-1">
@@ -52,164 +82,265 @@ export default function LoginView({ onLogin, onGoogleLogin, isLoggingIn }: Login
         </div>
       </header>
 
-      {/* Forms Section */}
-      {!isVisitorMode ? (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-5 mt-1">
+      {/* Mode Tabs */}
+      <div className="flex rounded-2xl overflow-hidden border-2 border-[#004225] bg-white">
+        <button
+          type="button"
+          onClick={() => setMode('login')}
+          className={`flex-1 py-2.5 font-mono text-[10px] uppercase tracking-widest font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+            mode === 'login'
+              ? 'bg-[#004225] text-[#CBA052]'
+              : 'text-[#004225] hover:bg-[#CBA052]/10'
+          }`}
+        >
+          <LogIn className="w-3.5 h-3.5" />
+          Sign In
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode('signup')}
+          className={`flex-1 py-2.5 font-mono text-[10px] uppercase tracking-widest font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+            mode === 'signup'
+              ? 'bg-[#004225] text-[#CBA052]'
+              : 'text-[#004225] hover:bg-[#CBA052]/10'
+          }`}
+        >
+          <UserPlus className="w-3.5 h-3.5" />
+          Register
+        </button>
+      </div>
+
+      {/* Error Banner */}
+      {authError && (
+        <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-sans rounded-xl px-4 py-3 text-center">
+          {authError}
+        </div>
+      )}
+
+      {/* ─── LOGIN FORM ─── */}
+      {mode === 'login' && (
+        <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
           <div className="flex flex-col gap-4">
-            {/* Student ID / Email Input */}
-            <div className="flex flex-col gap-1 relative">
-              <label className="font-mono text-[9px] text-[#004225] font-extrabold uppercase tracking-widest" htmlFor="email">
-                Student ID / Email
-              </label>
-              <div className="flex items-center relative border-b-2 border-[#CBA052]/50 focus-within:border-[#004225] transition-all">
+            {/* Email */}
+            <div className="flex flex-col gap-1">
+              <label className={labelClass} htmlFor="login-email">Email</label>
+              <div className={iconWrap}>
                 <Mail className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
-                <input 
-                  id="email"
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your student email"
+                <input
+                  id="login-email"
+                  type="email"
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="student@vsu.edu.ph"
                   required
-                  className="w-full font-sans text-[#1A1A1A] pb-2 pl-7 pr-2 bg-transparent text-xs md:text-sm placeholder:text-gray-400 outline-none border-none focus:ring-0"
+                  className={inputClass}
                 />
               </div>
             </div>
 
-            {/* Password Input */}
-            <div className="flex flex-col gap-1 relative">
-              <label className="font-mono text-[9px] text-[#004225] font-extrabold uppercase tracking-widest" htmlFor="password">
-                Password
-              </label>
-              <div className="flex items-center relative border-b-2 border-[#CBA052]/50 focus-within:border-[#004225] transition-all">
+            {/* Password */}
+            <div className="flex flex-col gap-1">
+              <label className={labelClass} htmlFor="login-password">Password</label>
+              <div className={iconWrap}>
                 <Key className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
-                <input 
-                  id="password"
-                  type={showPassword ? 'text' : 'password'} 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                <input
+                  id="login-password"
+                  type={showLoginPassword ? 'text' : 'password'}
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full font-sans text-[#1A1A1A] pb-2 pl-7 pr-10 bg-transparent text-xs md:text-sm placeholder:text-gray-400 outline-none border-none focus:ring-0"
+                  className={`${inputClass} pr-10`}
                 />
-                <button 
-                  type="button" 
-                  onClick={() => setShowPassword(!showPassword)}
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
                   className="absolute right-0 bottom-2.5 text-gray-400 hover:text-[#004225] transition-colors focus:outline-none"
                 >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col gap-3 mt-2">
-            <button 
-              type="submit"
-              disabled={isLoggingIn}
-              className="w-full h-12 bg-[#004225] text-[#CBA052] font-mono text-xs uppercase tracking-widest font-extrabold rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00301a] active:scale-[0.98] transition-all shadow-md disabled:opacity-50"
-            >
-              <span>Sign In</span>
-              <LogIn className="w-4 h-4" />
-            </button>
+          <button
+            type="submit"
+            disabled={isLoggingIn}
+            className="w-full h-12 bg-[#004225] text-[#CBA052] font-mono text-xs uppercase tracking-widest font-extrabold rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00301a] active:scale-[0.98] transition-all shadow-md disabled:opacity-50"
+          >
+            {isLoggingIn ? (
+              <span className="animate-pulse">Signing in...</span>
+            ) : (
+              <>
+                <span>Sign In</span>
+                <LogIn className="w-4 h-4" />
+              </>
+            )}
+          </button>
 
-            {/* Google OAuth Button */}
-            <button 
-              type="button"
-              onClick={onGoogleLogin}
-              disabled={isLoggingIn}
-              className="w-full h-12 bg-white text-[#004225] font-mono text-xs uppercase tracking-widest font-extrabold rounded-2xl flex items-center justify-center gap-3 border-2 border-[#004225] hover:bg-[#CBA052]/10 active:scale-[0.98] transition-all shadow-sm"
-            >
-              <svg className="w-4 h-4" viewBox="0 0 24 24">
-                <path
-                  fill="#EA4335"
-                  d="M12 5.04c1.66 0 3.2.57 4.38 1.69l3.27-3.27C17.68 1.54 14.98 1 12 1 7.24 1 3.2 3.74 1.25 7.74l3.83 2.97C6.01 7.42 8.78 5.04 12 5.04z"
-                />
-                <path
-                  fill="#4285F4"
-                  d="M23.49 12.27c0-.81-.07-1.59-.2-2.35H12v4.51h6.48c-.29 1.48-1.14 2.73-2.42 3.58l3.76 2.91c2.2-2.03 3.47-5.01 3.47-8.65z"
-                />
-                <path
-                  fill="#FBBC05"
-                  d="M5.08 10.71c-.24-.73-.38-1.51-.38-2.31s.14-1.58.38-2.31L1.25 5.12C.45 6.72 0 8.51 0 10.4s.45 3.68 1.25 5.28l3.83-2.97z"
-                />
-                <path
-                  fill="#34A853"
-                  d="M12 23c3.24 0 5.97-1.07 7.96-2.91l-3.76-2.91c-1.05.7-2.39 1.12-4.2 1.12-3.22 0-5.99-2.38-6.92-5.67l-3.83 2.97C3.2 20.26 7.24 23 12 23z"
-                />
-              </svg>
-              <span>Google Sign In</span>
-            </button>
-
-            <div className="text-center">
-              <a 
-                href="#" 
-                onClick={(e) => { e.preventDefault(); alert("Verification link sent to your registered academic email."); }}
-                className="font-mono text-[9px] text-[#004225] hover:text-[#CBA052] underline decoration-[#004225]/30 underline-offset-4 transition-colors font-bold"
+          <div className="text-center">
+            <p className="font-mono text-[9px] text-[#1A1A1A]/50 uppercase tracking-wider">
+              Don't have an account?{' '}
+              <button
+                type="button"
+                onClick={() => setMode('signup')}
+                className="text-[#004225] font-black underline underline-offset-2"
               >
-                Forgot Password?
-              </a>
-            </div>
+                Register now
+              </button>
+            </p>
           </div>
         </form>
-      ) : (
-        /* Visitor Pass Mode */
-        <form onSubmit={handleVisitorSubmit} className="flex flex-col gap-5 mt-1">
+      )}
+
+      {/* ─── SIGN UP FORM ─── */}
+      {mode === 'signup' && (
+        <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-4">
+          {signupError && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-sans rounded-xl px-4 py-2.5 text-center">
+              {signupError}
+            </div>
+          )}
+
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col gap-1 relative">
-              <label className="font-mono text-[9px] text-[#004225] font-extrabold uppercase tracking-widest" htmlFor="visitorName">
-                Visitor Full Name
-              </label>
-              <div className="flex items-center relative border-b-2 border-[#CBA052]/50 focus-within:border-[#004225] transition-all">
-                <Mail className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
-                <input 
-                  id="visitorName"
-                  type="text" 
-                  value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  placeholder="Enter your name (e.g. John Doe)"
+            {/* First Name + Last Name row */}
+            <div className="flex gap-3">
+              <div className="flex flex-col gap-1 flex-1">
+                <label className={labelClass} htmlFor="first-name">First Name</label>
+                <div className={iconWrap}>
+                  <User className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                  <input
+                    id="first-name"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Juan"
+                    required
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <label className={labelClass} htmlFor="last-name">Last Name</label>
+                <div className={iconWrap}>
+                  <User className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                  <input
+                    id="last-name"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="dela Cruz"
+                    required
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Student ID */}
+            <div className="flex flex-col gap-1">
+              <label className={labelClass} htmlFor="student-id">Student ID</label>
+              <div className={iconWrap}>
+                <Hash className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <input
+                  id="student-id"
+                  type="text"
+                  value={studentId}
+                  onChange={(e) => setStudentId(e.target.value)}
+                  placeholder="e.g. 2024-12345"
                   required
-                  className="w-full font-sans text-[#1A1A1A] pb-2 pl-7 pr-2 bg-transparent text-xs md:text-sm placeholder:text-gray-400 outline-none border-none focus:ring-0"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div className="flex flex-col gap-1">
+              <label className={labelClass} htmlFor="signup-email">Email</label>
+              <div className={iconWrap}>
+                <Mail className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <input
+                  id="signup-email"
+                  type="email"
+                  value={signupEmail}
+                  onChange={(e) => setSignupEmail(e.target.value)}
+                  placeholder="student@vsu.edu.ph"
+                  required
+                  className={inputClass}
+                />
+              </div>
+            </div>
+
+            {/* Password */}
+            <div className="flex flex-col gap-1">
+              <label className={labelClass} htmlFor="signup-password">Password</label>
+              <div className={iconWrap}>
+                <Key className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <input
+                  id="signup-password"
+                  type={showSignupPassword ? 'text' : 'password'}
+                  value={signupPassword}
+                  onChange={(e) => setSignupPassword(e.target.value)}
+                  placeholder="Min. 6 characters"
+                  required
+                  className={`${inputClass} pr-10`}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowSignupPassword(!showSignupPassword)}
+                  className="absolute right-0 bottom-2.5 text-gray-400 hover:text-[#004225] transition-colors focus:outline-none"
+                >
+                  {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div className="flex flex-col gap-1">
+              <label className={labelClass} htmlFor="signup-confirm">Confirm Password</label>
+              <div className={iconWrap}>
+                <Key className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <input
+                  id="signup-confirm"
+                  type={showSignupPassword ? 'text' : 'password'}
+                  value={signupConfirm}
+                  onChange={(e) => setSignupConfirm(e.target.value)}
+                  placeholder="Re-enter password"
+                  required
+                  className={`${inputClass} pr-10`}
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex flex-col gap-3 mt-2">
-            <button 
-              type="submit"
-              disabled={isLoggingIn}
-              className="w-full h-12 bg-[#004225] text-[#CBA052] font-mono text-xs uppercase tracking-widest font-extrabold rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00301a] active:scale-[0.98] transition-all shadow-md"
-            >
-              <span>Issue Visitor Pass</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+          <button
+            type="submit"
+            disabled={isLoggingIn}
+            className="w-full h-12 bg-[#004225] text-[#CBA052] font-mono text-xs uppercase tracking-widest font-extrabold rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00301a] active:scale-[0.98] transition-all shadow-md disabled:opacity-50 mt-1"
+          >
+            {isLoggingIn ? (
+              <span className="animate-pulse">Creating Account...</span>
+            ) : (
+              <>
+                <span>Create Account</span>
+                <ArrowRight className="w-4 h-4" />
+              </>
+            )}
+          </button>
 
-            <button 
-              type="button"
-              onClick={() => setIsVisitorMode(false)}
-              className="w-full h-11 border-2 border-[#004225] text-[#004225] hover:bg-[#CBA052]/10 font-mono text-[9px] uppercase tracking-wider font-extrabold rounded-2xl flex items-center justify-center gap-2"
-            >
-              Back to Student Login
-            </button>
+          <div className="text-center">
+            <p className="font-mono text-[9px] text-[#1A1A1A]/50 uppercase tracking-wider">
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={() => setMode('login')}
+                className="text-[#004225] font-black underline underline-offset-2"
+              >
+                Sign in
+              </button>
+            </p>
           </div>
         </form>
-      )}
-
-      {/* Footer info: Toggle Visitor Pass */}
-      {!isVisitorMode && (
-        <div className="mt-auto text-center border-t border-[#CBA052]/30 pt-4">
-          <p className="font-mono text-[9px] text-[#1A1A1A]/60 uppercase tracking-widest font-bold">
-            Guest or Visitor?
-          </p>
-          <button 
-            onClick={() => setIsVisitorMode(true)}
-            className="inline-flex items-center gap-1 font-sans text-xs text-[#004225] font-black mt-1.5 hover:underline focus:outline-none"
-          >
-            <span>Register for a Visitor Pass</span>
-            <ArrowRight className="w-3.5 h-3.5 text-[#004225]" />
-          </button>
-        </div>
       )}
     </div>
   );

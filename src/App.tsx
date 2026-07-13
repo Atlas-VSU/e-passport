@@ -15,6 +15,18 @@ import StampConfirmationView from './components/StampConfirmationView';
 import CompletionView from './components/CompletionView';
 import { Award, LogOut, Loader2, Landmark as LandmarkIcon } from 'lucide-react';
 
+// Helper: safely parse JSON without throwing on HTML error pages
+async function safeJson(res: Response): Promise<any> {
+  const text = await res.text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    // Server returned non-JSON (likely an HTML crash page)
+    console.error('Non-JSON response from server:', text.slice(0, 300));
+    return { error: `Server error (${res.status}). Check server logs.` };
+  }
+}
+
 enum Page {
   LOADING,
   LOGIN,
@@ -88,7 +100,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await res.json();
+      const data = await safeJson(res);
       
       if (!res.ok || data?.error) {
         setAuthError(data?.error || 'Login failed. Please check your credentials.');
@@ -129,7 +141,7 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstName, lastName, studentId, email, password })
       });
-      const data = await res.json();
+      const data = await safeJson(res);
       
       if (!res.ok || data?.error) {
         setAuthError(data?.error || 'Sign up failed. Please try again.');
@@ -396,7 +408,7 @@ export default function App() {
       </div>
 
       {/* ── Desktop: not supported message ── */}
-      <div className="hidden md:flex min-h-screen w-full flex-col items-center justify-center bg-[#004225] text-white gap-6 p-8">
+      <div className="hidden lg:flex min-h-screen w-full flex-col items-center justify-center bg-[#004225] text-white gap-6 p-8">
         <div className="w-20 h-20 rounded-full bg-[#CBA052] flex items-center justify-center shadow-xl">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-[#004225]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>

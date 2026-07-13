@@ -105,23 +105,28 @@ app.post('/api/auth/signup', async (req, res) => {
   // If Supabase is configured, create a real account
   if (supabaseAdmin) {
     try {
-      // Create the auth user via Supabase Admin
-      const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      // Use signUp (works with anon key OR service role key).
+      // admin.createUser requires service role only — signUp is universal.
+      const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
         email,
         password,
-        email_confirm: true, // auto-confirm so the user can log in immediately
-        user_metadata: {
-          first_name: firstName,
-          last_name: lastName,
-          student_id: studentId,
-          full_name: `${firstName} ${lastName}`
+        options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+            student_id: studentId,
+            full_name: `${firstName} ${lastName}`
+          }
         }
       });
 
       if (authError) {
         console.error('Supabase auth signup error:', authError);
-        // Handle common errors with friendly messages
-        if (authError.message?.includes('already registered') || authError.message?.includes('already exists')) {
+        if (
+          authError.message?.toLowerCase().includes('already registered') ||
+          authError.message?.toLowerCase().includes('already exists') ||
+          authError.message?.toLowerCase().includes('user already')
+        ) {
           return res.status(409).json({ error: 'An account with this email already exists. Please sign in instead.' });
         }
         return res.status(400).json({ error: authError.message || 'Failed to create account.' });
@@ -131,7 +136,7 @@ app.post('/api/auth/signup', async (req, res) => {
         return res.status(500).json({ error: 'User creation returned empty response.' });
       }
 
-      // Upsert the profile row (in case the trigger didn't fire or needs extra fields)
+      // Upsert the profile row so all custom fields are saved regardless of trigger timing
       const { data: profileData, error: profileError } = await supabaseAdmin
         .from('profiles')
         .upsert({
@@ -425,6 +430,16 @@ app.post('/api/stamps/upload', async (req, res) => {
   localStamps[userId].push(newStamp);
 
   res.json({ stamp: newStamp, source: 'local' });
+});
+
+// =========================================================================
+// GLOBAL JSON ERROR HANDLER — ensures crashes never return HTML to the client
+// =========================================================================
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled server error:', err);
+  if (!res.headersSent) {
+    res.status(500).json({ error: 'Internal server error. Please try again.' });
+  }
 });
 
 // =========================================================================

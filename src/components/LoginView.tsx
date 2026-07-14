@@ -109,11 +109,12 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
   };
 
   const inputClass =
-    'w-full font-sans text-[#1A1A1A] pb-2 pl-7 pr-2 bg-transparent text-xs md:text-sm placeholder:text-gray-400 outline-none border-none focus:ring-0';
+    'w-full font-sans text-[#1A1A1A] pb-2 pr-2 bg-transparent text-xs md:text-sm placeholder:text-gray-400 outline-none border-none focus:ring-0';
   const labelClass =
     'font-mono text-[9px] text-[#004225] font-extrabold uppercase tracking-widest';
   const iconWrap =
-    'flex items-center relative border-b-2 border-[#CBA052]/50 focus-within:border-[#004225] transition-all';
+    'flex items-center gap-2 border-b-2 border-[#CBA052]/50 focus-within:border-[#004225] transition-all py-1';
+  const iconSlotClass = 'w-5 flex justify-center shrink-0';
 
   return (
     <div className="w-full min-h-screen bg-[#FDF9F0] p-6 relative overflow-y-auto flex flex-col gap-5">
@@ -242,7 +243,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                 <button
                   type="button"
                   onClick={() => setShowLoginPassword(!showLoginPassword)}
-                  className="absolute right-0 bottom-2.5 text-gray-400 hover:text-[#004225] transition-colors focus:outline-none"
+                  className="text-gray-400 hover:text-[#004225] transition-colors focus:outline-none flex items-center justify-center shrink-0"
                 >
                   {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -347,7 +348,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
             <div className="flex flex-col gap-1">
               <label className={labelClass} htmlFor="student-id">Student ID</label>
               <div className={iconWrap}>
-                <Hash className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <span className={iconSlotClass}>
+                  <Hash className="text-[#004225] w-4 h-4" />
+                </span>
                 <input
                   id="student-id"
                   type="text"
@@ -420,7 +423,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                 <button
                   type="button"
                   onClick={() => setShowSignupPassword(!showSignupPassword)}
-                  className="absolute right-0 bottom-2.5 text-gray-400 hover:text-[#004225] transition-colors focus:outline-none"
+                  className="text-gray-400 hover:text-[#004225] transition-colors focus:outline-none flex items-center justify-center shrink-0"
                 >
                   {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>

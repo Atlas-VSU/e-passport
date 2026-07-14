@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LogIn, Key, Mail, Eye, EyeOff, ShieldCheck, UserPlus, User, Hash, ArrowRight } from 'lucide-react';
+import { LogIn, Key, Mail, Eye, EyeOff, ShieldCheck, UserPlus, User, Hash, ArrowRight, AlertCircle } from 'lucide-react';
 
 type AuthMode = 'login' | 'signup';
 
@@ -177,8 +177,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
 
       {/* Error Banner */}
       {authError && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-sans rounded-xl px-4 py-3 text-center">
-          {authError}
+        <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-3 text-center">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{authError}</span>
         </div>
       )}
 
@@ -186,8 +187,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
       {mode === 'login' && (
         <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
           {(loginSubmitError || authError) && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-sans rounded-xl px-4 py-2.5 text-center" role="alert">
-              {loginSubmitError || authError}
+            <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-2.5 text-center" role="alert">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{loginSubmitError || authError}</span>
             </div>
           )}
 
@@ -290,8 +292,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
       {mode === 'signup' && (
         <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-4">
           {(signupSubmitError || signupError) && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-sans rounded-xl px-4 py-2.5 text-center" role="alert">
-              {signupSubmitError || signupError}
+            <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-2.5 text-center" role="alert">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{signupSubmitError || signupError}</span>
             </div>
           )}
 

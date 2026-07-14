@@ -120,16 +120,16 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
     <div className="w-full min-h-screen bg-[#FDF9F0] p-6 relative overflow-y-auto flex flex-col gap-5">
 
       {/* Header */}
-      <header className="text-center flex flex-col items-center gap-3 mt-4">
-        <div className="flex flex-row items-center gap-3">
-          <div className="w-17 h-20 bg-white flex items-center justify-center overflow-hidden">
+      <header className="text-center flex flex-col items-center gap-2 mt-2">
+        <div className="flex flex-row items-center gap-2">
+          <div className="w-12 h-12 md:w-16 md:h-16 bg-white flex items-center justify-center overflow-hidden">
             <img
               className="w-full h-full"
               src="/vsu-brand-logo.png"
               alt="Visayas State University Seal"
             />
           </div>
-            <div className="w-20 h-20 bg-white flex items-center justify-center overflow-hidden">
+            <div className="w-12 h-12 md:w-16 md:h-16 bg-white flex items-center justify-center overflow-hidden">
             <img
               className="w-full h-full"
               src="/ussc-logo.png"
@@ -137,11 +137,11 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
             />
           </div>
         </div>
-        <div className="flex flex-col gap-1 mt-1">
-          <h1 className="font-serif text-2xl font-black text-[#004225] uppercase tracking-wider">
+        <div className="flex flex-col gap-1 mt-0">
+          <h1 className="font-serif text-xl md:text-2xl font-black text-[#004225] uppercase tracking-wider">
             USSC E-Passport
           </h1>
-          <p className="font-sans text-xs text-[#1A1A1A]/80 max-w-[220px] mx-auto leading-normal">
+          <p className="font-sans text-xs text-[#1A1A1A]/80 max-w-[200px] mx-auto leading-normal">
             Discover the iconic landmarks of Visayas State University!
           </p>
         </div>

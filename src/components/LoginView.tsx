@@ -113,7 +113,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
   const labelClass =
     'font-mono text-[9px] text-[#004225] font-extrabold uppercase tracking-widest';
   const iconWrap =
-    'flex items-center gap-2 border-b-2 border-[#CBA052]/50 focus-within:border-[#004225] transition-all py-1';
+    'flex items-center gap-2 bg-white/40 rounded-lg px-2 border-b-2 border-[#CBA052]/50 focus-within:bg-white focus-within:shadow-sm focus-within:border-[#004225] transition-all py-1';
   const iconSlotClass = 'w-5 flex justify-center shrink-0';
 
   return (
@@ -196,7 +196,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
             <div className="flex flex-col gap-1">
               <label className={labelClass} htmlFor="login-email">Email</label>
               <div className={iconWrap}>
-                <Mail className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <span className={iconSlotClass}>
+                  <Mail className="text-[#004225] w-4 h-4" />
+                </span>
                 <input
                   id="login-email"
                   type="email"
@@ -222,7 +224,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
             <div className="flex flex-col gap-1">
               <label className={labelClass} htmlFor="login-password">Password</label>
               <div className={iconWrap}>
-                <Key className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <span className={iconSlotClass}>
+                  <Key className="text-[#004225] w-4 h-4" />
+                </span>
                 <input
                   id="login-password"
                   type={showLoginPassword ? 'text' : 'password'}
@@ -238,7 +242,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   }}
                   placeholder="••••••••"
                   required
-                  className={`${inputClass} pr-10`}
+                  className={inputClass}
                 />
                 <button
                   type="button"
@@ -297,7 +301,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
               <div className="flex flex-col gap-1 flex-1">
                 <label className={labelClass} htmlFor="first-name">First Name</label>
                 <div className={iconWrap}>
-                  <User className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                  <span className={iconSlotClass}>
+                    <User className="text-[#004225] w-4 h-4" />
+                  </span>
                   <input
                     id="first-name"
                     type="text"
@@ -321,7 +327,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
               <div className="flex flex-col gap-1 flex-1">
                 <label className={labelClass} htmlFor="last-name">Last Name</label>
                 <div className={iconWrap}>
-                  <User className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                  <span className={iconSlotClass}>
+                    <User className="text-[#004225] w-4 h-4" />
+                  </span>
                   <input
                     id="last-name"
                     type="text"
@@ -376,7 +384,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
             <div className="flex flex-col gap-1">
               <label className={labelClass} htmlFor="signup-email">Email</label>
               <div className={iconWrap}>
-                <Mail className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <span className={iconSlotClass}>
+                  <Mail className="text-[#004225] w-4 h-4" />
+                </span>
                 <input
                   id="signup-email"
                   type="email"
@@ -402,7 +412,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
             <div className="flex flex-col gap-1">
               <label className={labelClass} htmlFor="signup-password">Password</label>
               <div className={iconWrap}>
-                <Key className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <span className={iconSlotClass}>
+                  <Key className="text-[#004225] w-4 h-4" />
+                </span>
                 <input
                   id="signup-password"
                   type={showSignupPassword ? 'text' : 'password'}
@@ -418,7 +430,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   }}
                   placeholder="Min. 6 characters"
                   required
-                  className={`${inputClass} pr-10`}
+                  className={inputClass}
                 />
                 <button
                   type="button"
@@ -435,7 +447,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
             <div className="flex flex-col gap-1">
               <label className={labelClass} htmlFor="signup-confirm">Confirm Password</label>
               <div className={iconWrap}>
-                <Key className="text-[#004225] absolute left-0 bottom-2.5 w-4 h-4" />
+                <span className={iconSlotClass}>
+                  <Key className="text-[#004225] w-4 h-4" />
+                </span>
                 <input
                   id="signup-confirm"
                   type={showSignupPassword ? 'text' : 'password'}
@@ -451,7 +465,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   }}
                   placeholder="Re-enter password"
                   required
-                  className={`${inputClass} pr-10`}
+                  className={inputClass}
                 />
               </div>
               {signupErrors.confirm && <p className="text-[10px] text-red-600 font-sans">{signupErrors.confirm}</p>}

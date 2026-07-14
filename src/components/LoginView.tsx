@@ -17,6 +17,8 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [loginErrors, setLoginErrors] = useState({ email: '', password: '' });
+  const [loginSubmitError, setLoginSubmitError] = useState('');
 
   // Sign Up fields
   const [firstName, setFirstName] = useState('');
@@ -27,26 +29,83 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
   const [signupConfirm, setSignupConfirm] = useState('');
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [signupError, setSignupError] = useState('');
+  const [signupErrors, setSignupErrors] = useState({
+    firstName: '',
+    lastName: '',
+    studentId: '',
+    email: '',
+    password: '',
+    confirm: '',
+  });
+  const [signupSubmitError, setSignupSubmitError] = useState('');
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginEmail || !loginPassword) return;
-    onLogin(loginEmail, loginPassword);
+    const nextErrors = { email: '', password: '' };
+
+    if (!loginEmail.trim()) {
+      nextErrors.email = 'Please enter your email.';
+    }
+    if (!loginPassword.trim()) {
+      nextErrors.password = 'Please enter your password.';
+    }
+
+    setLoginErrors(nextErrors);
+    if (nextErrors.email || nextErrors.password) {
+      setLoginSubmitError('Please fill in all fields');
+      return;
+    }
+
+    setLoginSubmitError('');
+    onLogin(loginEmail.trim(), loginPassword);
   };
 
   const handleSignUpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    const trimmedStudentId = studentId.trim();
+    const trimmedSignupEmail = signupEmail.trim();
+    const trimmedSignupPassword = signupPassword.trim();
+    const trimmedSignupConfirm = signupConfirm.trim();
+
+    const nextErrors = {
+      firstName: '',
+      lastName: '',
+      studentId: '',
+      email: '',
+      password: '',
+      confirm: '',
+    };
+
+    if (!trimmedFirstName) nextErrors.firstName = 'Please enter your first name.';
+    if (!trimmedLastName) nextErrors.lastName = 'Please enter your last name.';
+    if (!trimmedStudentId) nextErrors.studentId = 'Please enter your student ID.';
+    if (!trimmedSignupEmail) nextErrors.email = 'Please enter your email.';
+    if (!trimmedSignupPassword) nextErrors.password = 'Please enter a password.';
+    if (!trimmedSignupConfirm) nextErrors.confirm = 'Please confirm your password.';
+
+    setSignupErrors(nextErrors);
     setSignupError('');
-    if (!firstName || !lastName || !studentId || !signupEmail || !signupPassword) return;
-    if (signupPassword !== signupConfirm) {
+    setSignupSubmitError('');
+
+    if (nextErrors.firstName || nextErrors.lastName || nextErrors.studentId || nextErrors.email || nextErrors.password || nextErrors.confirm) {
+      setSignupSubmitError('Please fill in all fields');
+      return;
+    }
+
+    if (trimmedSignupPassword !== trimmedSignupConfirm) {
+      setSignupErrors((prev) => ({ ...prev, confirm: 'Passwords do not match.' }));
       setSignupError('Passwords do not match.');
       return;
     }
-    if (signupPassword.length < 6) {
+    if (trimmedSignupPassword.length < 6) {
+      setSignupErrors((prev) => ({ ...prev, password: 'Password must be at least 6 characters.' }));
       setSignupError('Password must be at least 6 characters.');
       return;
     }
-    onSignUp(firstName, lastName, studentId, signupEmail, signupPassword);
+
+    onSignUp(trimmedFirstName, trimmedLastName, trimmedStudentId, trimmedSignupEmail, trimmedSignupPassword);
   };
 
   const inputClass =
@@ -125,6 +184,12 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
       {/* ─── LOGIN FORM ─── */}
       {mode === 'login' && (
         <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
+          {(loginSubmitError || authError) && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-sans rounded-xl px-4 py-2.5 text-center" role="alert">
+              {loginSubmitError || authError}
+            </div>
+          )}
+
           <div className="flex flex-col gap-4">
             {/* Email */}
             <div className="flex flex-col gap-1">
@@ -135,12 +200,21 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   id="login-email"
                   type="email"
                   value={loginEmail}
-                  onChange={(e) => setLoginEmail(e.target.value)}
+                  onChange={(e) => {
+                    setLoginEmail(e.target.value);
+                    if (loginErrors.email) {
+                      setLoginErrors((prev) => ({ ...prev, email: '' }));
+                    }
+                    if (loginSubmitError) {
+                      setLoginSubmitError('');
+                    }
+                  }}
                   placeholder="student@vsu.edu.ph"
                   required
                   className={inputClass}
                 />
               </div>
+              {loginErrors.email && <p className="text-[10px] text-red-600 font-sans">{loginErrors.email}</p>}
             </div>
 
             {/* Password */}
@@ -152,7 +226,15 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   id="login-password"
                   type={showLoginPassword ? 'text' : 'password'}
                   value={loginPassword}
-                  onChange={(e) => setLoginPassword(e.target.value)}
+                  onChange={(e) => {
+                    setLoginPassword(e.target.value);
+                    if (loginErrors.password) {
+                      setLoginErrors((prev) => ({ ...prev, password: '' }));
+                    }
+                    if (loginSubmitError) {
+                      setLoginSubmitError('');
+                    }
+                  }}
                   placeholder="••••••••"
                   required
                   className={`${inputClass} pr-10`}
@@ -165,6 +247,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {loginErrors.password && <p className="text-[10px] text-red-600 font-sans">{loginErrors.password}</p>}
             </div>
           </div>
 
@@ -201,9 +284,9 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
       {/* ─── SIGN UP FORM ─── */}
       {mode === 'signup' && (
         <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-4">
-          {signupError && (
-            <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-sans rounded-xl px-4 py-2.5 text-center">
-              {signupError}
+          {(signupSubmitError || signupError) && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-xs font-sans rounded-xl px-4 py-2.5 text-center" role="alert">
+              {signupSubmitError || signupError}
             </div>
           )}
 
@@ -218,12 +301,21 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                     id="first-name"
                     type="text"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={(e) => {
+                      setFirstName(e.target.value);
+                      if (signupErrors.firstName) {
+                        setSignupErrors((prev) => ({ ...prev, firstName: '' }));
+                      }
+                      if (signupSubmitError) {
+                        setSignupSubmitError('');
+                      }
+                    }}
                     placeholder="Juan"
                     required
                     className={inputClass}
                   />
                 </div>
+                {signupErrors.firstName && <p className="text-[10px] text-red-600 font-sans">{signupErrors.firstName}</p>}
               </div>
               <div className="flex flex-col gap-1 flex-1">
                 <label className={labelClass} htmlFor="last-name">Last Name</label>
@@ -233,12 +325,21 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                     id="last-name"
                     type="text"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={(e) => {
+                      setLastName(e.target.value);
+                      if (signupErrors.lastName) {
+                        setSignupErrors((prev) => ({ ...prev, lastName: '' }));
+                      }
+                      if (signupSubmitError) {
+                        setSignupSubmitError('');
+                      }
+                    }}
                     placeholder="dela Cruz"
                     required
                     className={inputClass}
                   />
                 </div>
+                {signupErrors.lastName && <p className="text-[10px] text-red-600 font-sans">{signupErrors.lastName}</p>}
               </div>
             </div>
 
@@ -251,12 +352,21 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   id="student-id"
                   type="text"
                   value={studentId}
-                  onChange={(e) => setStudentId(e.target.value)}
+                  onChange={(e) => {
+                    setStudentId(e.target.value);
+                    if (signupErrors.studentId) {
+                      setSignupErrors((prev) => ({ ...prev, studentId: '' }));
+                    }
+                    if (signupSubmitError) {
+                      setSignupSubmitError('');
+                    }
+                  }}
                   placeholder="e.g. 2024-12345"
                   required
                   className={inputClass}
                 />
               </div>
+              {signupErrors.studentId && <p className="text-[10px] text-red-600 font-sans">{signupErrors.studentId}</p>}
             </div>
 
             {/* Email */}
@@ -268,12 +378,21 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   id="signup-email"
                   type="email"
                   value={signupEmail}
-                  onChange={(e) => setSignupEmail(e.target.value)}
+                  onChange={(e) => {
+                    setSignupEmail(e.target.value);
+                    if (signupErrors.email) {
+                      setSignupErrors((prev) => ({ ...prev, email: '' }));
+                    }
+                    if (signupSubmitError) {
+                      setSignupSubmitError('');
+                    }
+                  }}
                   placeholder="student@vsu.edu.ph"
                   required
                   className={inputClass}
                 />
               </div>
+              {signupErrors.email && <p className="text-[10px] text-red-600 font-sans">{signupErrors.email}</p>}
             </div>
 
             {/* Password */}
@@ -285,7 +404,15 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   id="signup-password"
                   type={showSignupPassword ? 'text' : 'password'}
                   value={signupPassword}
-                  onChange={(e) => setSignupPassword(e.target.value)}
+                  onChange={(e) => {
+                    setSignupPassword(e.target.value);
+                    if (signupErrors.password) {
+                      setSignupErrors((prev) => ({ ...prev, password: '' }));
+                    }
+                    if (signupSubmitError) {
+                      setSignupSubmitError('');
+                    }
+                  }}
                   placeholder="Min. 6 characters"
                   required
                   className={`${inputClass} pr-10`}
@@ -298,6 +425,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              {signupErrors.password && <p className="text-[10px] text-red-600 font-sans">{signupErrors.password}</p>}
             </div>
 
             {/* Confirm Password */}
@@ -309,12 +437,21 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
                   id="signup-confirm"
                   type={showSignupPassword ? 'text' : 'password'}
                   value={signupConfirm}
-                  onChange={(e) => setSignupConfirm(e.target.value)}
+                  onChange={(e) => {
+                    setSignupConfirm(e.target.value);
+                    if (signupErrors.confirm) {
+                      setSignupErrors((prev) => ({ ...prev, confirm: '' }));
+                    }
+                    if (signupSubmitError) {
+                      setSignupSubmitError('');
+                    }
+                  }}
                   placeholder="Re-enter password"
                   required
                   className={`${inputClass} pr-10`}
                 />
               </div>
+              {signupErrors.confirm && <p className="text-[10px] text-red-600 font-sans">{signupErrors.confirm}</p>}
             </div>
           </div>
 

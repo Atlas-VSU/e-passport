@@ -111,7 +111,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
   const inputClass =
     'w-full font-sans text-[#1A1A1A] pb-2 pr-2 bg-transparent text-xs md:text-sm placeholder:text-gray-400 outline-none border-none focus:ring-0';
   const labelClass =
-    'font-mono text-[9px] text-[#004225] font-extrabold uppercase tracking-widest';
+    'font-sans text-[11px] text-gray-500 font-medium';
   const iconWrap =
     'flex items-center gap-2 bg-white/40 rounded-lg px-2 border-b-2 border-[#CBA052]/50 focus-within:bg-white focus-within:shadow-sm focus-within:border-[#004225] transition-all py-1';
   const iconSlotClass = 'w-5 flex justify-center shrink-0';
@@ -272,7 +272,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
           </button>
 
           <div className="text-center">
-            <p className="font-mono text-[9px] text-[#1A1A1A]/50 uppercase tracking-wider">
+            <p className="font-sans text-xs text-gray-500 normal-case">
               Don't have an account?{' '}
               <button
                 type="button"
@@ -488,7 +488,7 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
           </button>
 
           <div className="text-center">
-            <p className="font-mono text-[9px] text-[#1A1A1A]/50 uppercase tracking-wider">
+            <p className="font-sans text-xs text-gray-500 normal-case">
               Already have an account?{' '}
               <button
                 type="button"

@@ -117,393 +117,370 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError }:
   const iconSlotClass = 'w-5 flex justify-center shrink-0';
 
   return (
-    <div className="w-full min-h-screen bg-[#FDF9F0] p-6 relative overflow-y-auto flex flex-col gap-5">
+    <div className="w-full min-h-screen bg-[#FDF9F0] p-4 md:p-6 flex flex-col gap-4">
+      <section className="relative overflow-hidden rounded-t-4xl border border-[#00321c]/30 bg-[#004225] p-6 shadow-[0_18px_45px_rgba(0,0,0,0.12)]">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_42%)]" />
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cdefs%3E%3Cpattern id='g' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 20 C10 0 30 40 40 20' fill='none' stroke='%23f4deb2' stroke-width='1' opacity='0.45'/%3E%3Cpath d='M0 30 C10 10 30 50 40 30' fill='none' stroke='%23d8c184' stroke-width='1' opacity='0.24'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23g)'/%3E%3C/svg%3E")` }} />
+        <div className="absolute inset-x-4 bottom-3 h-px bg-[#CBA052]/40" />
 
-      {/* Header */}
-      <header className="text-center flex flex-col items-center gap-2 mt-2">
-        <div className="flex flex-row items-center gap-2">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-white flex items-center justify-center overflow-hidden">
-            <img
-              className="w-full h-full"
-              src="/vsu-brand-logo.png"
-              alt="Visayas State University Seal"
-            />
+        <header className="relative flex flex-col items-center text-center gap-4">
+          <div className="flex items-center justify-center gap-5 px-3 py-2 backdrop-blur-sm">
+            <div className="w-15 h-15 md:w-17 md:h-17 bg-[#F6EEDC] rounded-full flex items-center justify-center overflow-hidden ring-2 ring-[#F4D78A]/30">
+              <img
+                className="w-full h-full"
+                src="/vsu-brand-logo.png"
+                alt="Visayas State University Seal"
+              />
+            </div>
+            <div className="w-15 h-15 md:w-17 md:h-17 bg-[#004225] rounded-full flex items-center justify-center overflow-hidden ring-2 ring-[#F4D78A]/30">
+              <img
+                className="w-full h-full"
+                src="/ussc-logo.png"
+                alt="USSC Logo"
+              />
+            </div>
           </div>
-            <div className="w-12 h-12 md:w-16 md:h-16 bg-white flex items-center justify-center overflow-hidden">
-            <img
-              className="w-full h-full"
-              src="/ussc-logo.png"
-              alt="USSC Logo"
-            />
+
+          <div className="flex flex-col items-center gap-2">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#CBA052]/30 bg-[#00321c]/40 px-3 py-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#CBA052]" />
+              <span className="font-sans text-[10px] uppercase tracking-[0.32em] text-[#CBA052]/90">
+                Official Entry Pass
+              </span>
+            </div>
+            <h1 className="font-serif text-3xl md:text-4xl font-black text-[#F4D78A] uppercase tracking-[0.28em] drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
+              USSC E-Passport
+            </h1>
+            <p className="font-sans text-xs text-[#F6EEDC]/80 max-w-65 mx-auto leading-normal pb-8">
+              Your digital ticket to the iconic VSU landmarks.
+            </p>
           </div>
-        </div>
-        <div className="flex flex-col gap-1 mt-0">
-          <h1 className="font-serif text-xl md:text-2xl font-black text-[#004225] uppercase tracking-wider">
-            USSC E-Passport
-          </h1>
-          <p className="font-sans text-xs text-[#1A1A1A]/80 max-w-[200px] mx-auto leading-normal">
-            Discover the iconic landmarks of Visayas State University!
-          </p>
-        </div>
-      </header>
+        </header>
+      </section>
 
-      {/* Mode Tabs */}
-      <div className="flex rounded-2xl overflow-hidden border-2 border-[#004225] bg-white">
-        <button
-          type="button"
-          onClick={() => setMode('login')}
-          className={`flex-1 py-2.5 font-mono text-[10px] uppercase tracking-widest font-extrabold transition-all flex items-center justify-center gap-1.5 ${
-            mode === 'login'
-              ? 'bg-[#004225] text-[#CBA052]'
-              : 'text-[#004225] hover:bg-[#CBA052]/10'
-          }`}
+      <section className="relative z-20 -mt-10 rounded-b-4xl border-2 border-dashed border-[#CBA052]/40 bg-[#FFFDF8] p-4 pt-16 shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden">
+        <div className="absolute inset-x-0 -top-3 h-8 bg-[#FFFDF8] bg-[radial-gradient(circle_at_top,_rgba(255,253,248,0.96)_20%,transparent_20%)] bg-[length:16px_16px]" />
+        <div className="absolute inset-x-6 -top-5 h-1 border-t-15 border-dashed border-[#CBA052]/90" />
+        <div className="absolute left-1/2 -top-10 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-[#CBA052]/90 bg-[#004225] shadow-sm" />
+
+        <form
+          onSubmit={mode === 'login' ? handleLoginSubmit : handleSignUpSubmit}
+          className="relative flex flex-col gap-4"
         >
-          <LogIn className="w-3.5 h-3.5" />
-          Sign In
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('signup')}
-          className={`flex-1 py-2.5 font-mono text-[10px] uppercase tracking-widest font-extrabold transition-all flex items-center justify-center gap-1.5 ${
-            mode === 'signup'
-              ? 'bg-[#004225] text-[#CBA052]'
-              : 'text-[#004225] hover:bg-[#CBA052]/10'
-          }`}
-        >
-          <UserPlus className="w-3.5 h-3.5" />
-          Register
-        </button>
-      </div>
+          <div className="relative flex rounded-2xl overflow-hidden border-2 border-[#004225] bg-white shadow-sm -mt-8 z-10">
+            <button
+              type="button"
+              onClick={() => setMode('login')}
+              className={`flex-1 py-2.5 font-mono text-[10px] uppercase tracking-widest font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+                mode === 'login'
+                  ? 'bg-[#004225] text-[#CBA052]'
+                  : 'text-[#004225] hover:bg-[#CBA052]/10'
+              }`}
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('signup')}
+              className={`flex-1 py-2.5 font-mono text-[10px] uppercase tracking-widest font-extrabold transition-all flex items-center justify-center gap-1.5 ${
+                mode === 'signup'
+                  ? 'bg-[#004225] text-[#CBA052]'
+                  : 'text-[#004225] hover:bg-[#CBA052]/10'
+              }`}
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              Register
+            </button>
+          </div>
 
-      {/* Error Banner */}
-      {authError && (
-        <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-3 text-center">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{authError}</span>
-        </div>
-      )}
-
-      {/* ─── LOGIN FORM ─── */}
-      {mode === 'login' && (
-        <form onSubmit={handleLoginSubmit} className="flex flex-col gap-5">
-          {(loginSubmitError || authError) && (
-            <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-2.5 text-center" role="alert">
+          {authError && (
+            <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-3 text-center">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{loginSubmitError || authError}</span>
+              <span>{authError}</span>
             </div>
           )}
 
-          <div className="flex flex-col gap-4">
-            {/* Email */}
-            <div className="flex flex-col gap-1">
-              <label className={labelClass} htmlFor="login-email">Email</label>
-              <div className={iconWrap}>
-                <span className={iconSlotClass}>
-                  <Mail className="text-[#004225] w-4 h-4" />
-                </span>
-                <input
-                  id="login-email"
-                  type="email"
-                  value={loginEmail}
-                  onChange={(e) => {
-                    setLoginEmail(e.target.value);
-                    if (loginErrors.email) {
-                      setLoginErrors((prev) => ({ ...prev, email: '' }));
-                    }
-                    if (loginSubmitError) {
-                      setLoginSubmitError('');
-                    }
-                  }}
-                  placeholder="student@vsu.edu.ph"
-                  required
-                  className={inputClass}
-                />
-              </div>
-              {loginErrors.email && <p className="text-[10px] text-red-600 font-sans">{loginErrors.email}</p>}
+          {(mode === 'login' && (loginSubmitError || authError)) ||
+          (mode === 'signup' && (signupSubmitError || signupError)) ? (
+            <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-2.5 text-center" role="alert">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{mode === 'login' ? loginSubmitError || authError : signupSubmitError || signupError}</span>
             </div>
+          ) : null}
 
-            {/* Password */}
-            <div className="flex flex-col gap-1">
-              <label className={labelClass} htmlFor="login-password">Password</label>
-              <div className={iconWrap}>
-                <span className={iconSlotClass}>
-                  <Key className="text-[#004225] w-4 h-4" />
-                </span>
-                <input
-                  id="login-password"
-                  type={showLoginPassword ? 'text' : 'password'}
-                  value={loginPassword}
-                  onChange={(e) => {
-                    setLoginPassword(e.target.value);
-                    if (loginErrors.password) {
-                      setLoginErrors((prev) => ({ ...prev, password: '' }));
-                    }
-                    if (loginSubmitError) {
-                      setLoginSubmitError('');
-                    }
-                  }}
-                  placeholder="••••••••"
-                  required
-                  className={inputClass}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowLoginPassword(!showLoginPassword)}
-                  className="text-gray-400 hover:text-[#004225] transition-colors focus:outline-none flex items-center justify-center shrink-0"
-                >
-                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+          <div className="relative space-y-4 rounded-3xl border border-[#004225]/10 bg-white p-4">
+            {mode === 'login' ? (
+                  <>
+                    <div className="space-y-1">
+                      <p className="font-sans text-[11px] text-gray-500 font-medium">Email</p>
+                      <div className={iconWrap}>
+                        <span className={iconSlotClass}>
+                          <Mail className="text-[#004225] w-4 h-4" />
+                        </span>
+                        <input
+                          id="login-email"
+                          type="email"
+                          value={loginEmail}
+                          onChange={(e) => {
+                            setLoginEmail(e.target.value);
+                            if (loginErrors.email) {
+                              setLoginErrors((prev) => ({ ...prev, email: '' }));
+                            }
+                            if (loginSubmitError) {
+                              setLoginSubmitError('');
+                            }
+                          }}
+                          placeholder="student@vsu.edu.ph"
+                          required
+                          className={inputClass}
+                        />
+                      </div>
+                      {loginErrors.email && <p className="text-[10px] text-red-600 font-sans">{loginErrors.email}</p>}
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="font-sans text-[11px] text-gray-500 font-medium">Password</p>
+                      <div className={iconWrap}>
+                        <span className={iconSlotClass}>
+                          <Key className="text-[#004225] w-4 h-4" />
+                        </span>
+                        <input
+                          id="login-password"
+                          type={showLoginPassword ? 'text' : 'password'}
+                          value={loginPassword}
+                          onChange={(e) => {
+                            setLoginPassword(e.target.value);
+                            if (loginErrors.password) {
+                              setLoginErrors((prev) => ({ ...prev, password: '' }));
+                            }
+                            if (loginSubmitError) {
+                              setLoginSubmitError('');
+                            }
+                          }}
+                          placeholder="••••••••"
+                          required
+                          className={inputClass}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowLoginPassword(!showLoginPassword)}
+                          className="text-gray-400 hover:text-[#004225] transition-colors focus:outline-none flex items-center justify-center shrink-0"
+                        >
+                          {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      {loginErrors.password && <p className="text-[10px] text-red-600 font-sans">{loginErrors.password}</p>}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid gap-4">
+                      <div className="space-y-1">
+                        <p className="font-sans text-[11px] text-gray-500 font-medium">First Name</p>
+                        <div className={iconWrap}>
+                          <span className={iconSlotClass}>
+                            <User className="text-[#004225] w-4 h-4" />
+                          </span>
+                          <input
+                            id="first-name"
+                            type="text"
+                            value={firstName}
+                            onChange={(e) => {
+                              setFirstName(e.target.value);
+                              if (signupErrors.firstName) {
+                                setSignupErrors((prev) => ({ ...prev, firstName: '' }));
+                              }
+                              if (signupSubmitError) {
+                                setSignupSubmitError('');
+                              }
+                            }}
+                            placeholder="Juan"
+                            required
+                            className={inputClass}
+                          />
+                        </div>
+                        {signupErrors.firstName && <p className="text-[10px] text-red-600 font-sans">{signupErrors.firstName}</p>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <p className="font-sans text-[11px] text-gray-500 font-medium">Last Name</p>
+                        <div className={iconWrap}>
+                          <span className={iconSlotClass}>
+                            <User className="text-[#004225] w-4 h-4" />
+                          </span>
+                          <input
+                            id="last-name"
+                            type="text"
+                            value={lastName}
+                            onChange={(e) => {
+                              setLastName(e.target.value);
+                              if (signupErrors.lastName) {
+                                setSignupErrors((prev) => ({ ...prev, lastName: '' }));
+                              }
+                              if (signupSubmitError) {
+                                setSignupSubmitError('');
+                              }
+                            }}
+                            placeholder="dela Cruz"
+                            required
+                            className={inputClass}
+                          />
+                        </div>
+                        {signupErrors.lastName && <p className="text-[10px] text-red-600 font-sans">{signupErrors.lastName}</p>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <p className="font-sans text-[11px] text-gray-500 font-medium">Student ID</p>
+                        <div className={iconWrap}>
+                          <span className={iconSlotClass}>
+                            <Hash className="text-[#004225] w-4 h-4" />
+                          </span>
+                          <input
+                            id="student-id"
+                            type="text"
+                            value={studentId}
+                            onChange={(e) => {
+                              setStudentId(e.target.value);
+                              if (signupErrors.studentId) {
+                                setSignupErrors((prev) => ({ ...prev, studentId: '' }));
+                              }
+                              if (signupSubmitError) {
+                                setSignupSubmitError('');
+                              }
+                            }}
+                            placeholder="26-1-00067"
+                            required
+                            className={inputClass}
+                          />
+                        </div>
+                        {signupErrors.studentId && <p className="text-[10px] text-red-600 font-sans">{signupErrors.studentId}</p>}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4">
+                      <div className="space-y-1">
+                        <p className="font-sans text-[11px] text-gray-500 font-medium">Email</p>
+                        <div className={iconWrap}>
+                          <span className={iconSlotClass}>
+                            <Mail className="text-[#004225] w-4 h-4" />
+                          </span>
+                          <input
+                            id="signup-email"
+                            type="email"
+                            value={signupEmail}
+                            onChange={(e) => {
+                              setSignupEmail(e.target.value);
+                              if (signupErrors.email) {
+                                setSignupErrors((prev) => ({ ...prev, email: '' }));
+                              }
+                              if (signupSubmitError) {
+                                setSignupSubmitError('');
+                              }
+                            }}
+                            placeholder="student@vsu.edu.ph"
+                            required
+                            className={inputClass}
+                          />
+                        </div>
+                        {signupErrors.email && <p className="text-[10px] text-red-600 font-sans">{signupErrors.email}</p>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <p className="font-sans text-[11px] text-gray-500 font-medium">Password</p>
+                        <div className={iconWrap}>
+                          <span className={iconSlotClass}>
+                            <Key className="text-[#004225] w-4 h-4" />
+                          </span>
+                          <input
+                            id="signup-password"
+                            type={showSignupPassword ? 'text' : 'password'}
+                            value={signupPassword}
+                            onChange={(e) => {
+                              setSignupPassword(e.target.value);
+                              if (signupErrors.password) {
+                                setSignupErrors((prev) => ({ ...prev, password: '' }));
+                              }
+                              if (signupSubmitError) {
+                                setSignupSubmitError('');
+                              }
+                            }}
+                            placeholder="Min. 6 characters"
+                            required
+                            className={inputClass}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowSignupPassword(!showSignupPassword)}
+                            className="text-gray-400 hover:text-[#004225] transition-colors focus:outline-none flex items-center justify-center shrink-0"
+                          >
+                            {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+                        {signupErrors.password && <p className="text-[10px] text-red-600 font-sans">{signupErrors.password}</p>}
+                      </div>
+
+                      <div className="space-y-1">
+                        <p className="font-sans text-[11px] text-gray-500 font-medium">Confirm Password</p>
+                        <div className={iconWrap}>
+                          <span className={iconSlotClass}>
+                            <Key className="text-[#004225] w-4 h-4" />
+                          </span>
+                          <input
+                            id="signup-confirm"
+                            type={showSignupPassword ? 'text' : 'password'}
+                            value={signupConfirm}
+                            onChange={(e) => {
+                              setSignupConfirm(e.target.value);
+                              if (signupErrors.confirm) {
+                                setSignupErrors((prev) => ({ ...prev, confirm: '' }));
+                              }
+                              if (signupSubmitError) {
+                                setSignupSubmitError('');
+                              }
+                            }}
+                            placeholder="Re-enter password"
+                            required
+                            className={inputClass}
+                          />
+                        </div>
+                        {signupErrors.confirm && <p className="text-[10px] text-red-600 font-sans">{signupErrors.confirm}</p>}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
-              {loginErrors.password && <p className="text-[10px] text-red-600 font-sans">{loginErrors.password}</p>}
-            </div>
-          </div>
-
           <button
             type="submit"
             disabled={isLoggingIn}
             className="w-full h-12 bg-[#004225] text-[#CBA052] font-mono text-xs uppercase tracking-widest font-extrabold rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00301a] active:scale-[0.98] transition-all shadow-md disabled:opacity-50"
           >
             {isLoggingIn ? (
-              <span className="animate-pulse">Signing in...</span>
+              <span className="animate-pulse">
+                {mode === 'login' ? 'Signing in...' : 'Creating Account...'}
+              </span>
             ) : (
               <>
-                <span>Sign In</span>
-                <LogIn className="w-4 h-4" />
+                <span>{mode === 'login' ? 'Sign In' : 'Create Account'}</span>
+                {mode === 'login' ? <LogIn className="w-4 h-4" /> : <ArrowRight className="w-4 h-4" />}
               </>
             )}
           </button>
 
           <div className="text-center">
             <p className="font-sans text-xs text-gray-500 normal-case">
-              Don't have an account?{' '}
+              {mode === 'login' ? 'Don\'t have an account? ' : 'Already have an account? '}
               <button
                 type="button"
-                onClick={() => setMode('signup')}
+                onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
                 className="text-[#004225] font-black underline underline-offset-2"
               >
-                Register now
+                {mode === 'login' ? 'Register now' : 'Sign in'}
               </button>
             </p>
           </div>
         </form>
-      )}
-
-      {/* ─── SIGN UP FORM ─── */}
-      {mode === 'signup' && (
-        <form onSubmit={handleSignUpSubmit} className="flex flex-col gap-4">
-          {(signupSubmitError || signupError) && (
-            <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-2.5 text-center" role="alert">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{signupSubmitError || signupError}</span>
-            </div>
-          )}
-
-          <div className="flex flex-col gap-4">
-            {/* First Name + Last Name row */}
-            <div className="flex gap-3">
-              <div className="flex flex-col gap-1 flex-1">
-                <label className={labelClass} htmlFor="first-name">First Name</label>
-                <div className={iconWrap}>
-                  <span className={iconSlotClass}>
-                    <User className="text-[#004225] w-4 h-4" />
-                  </span>
-                  <input
-                    id="first-name"
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => {
-                      setFirstName(e.target.value);
-                      if (signupErrors.firstName) {
-                        setSignupErrors((prev) => ({ ...prev, firstName: '' }));
-                      }
-                      if (signupSubmitError) {
-                        setSignupSubmitError('');
-                      }
-                    }}
-                    placeholder="Juan"
-                    required
-                    className={inputClass}
-                  />
-                </div>
-                {signupErrors.firstName && <p className="text-[10px] text-red-600 font-sans">{signupErrors.firstName}</p>}
-              </div>
-              <div className="flex flex-col gap-1 flex-1">
-                <label className={labelClass} htmlFor="last-name">Last Name</label>
-                <div className={iconWrap}>
-                  <span className={iconSlotClass}>
-                    <User className="text-[#004225] w-4 h-4" />
-                  </span>
-                  <input
-                    id="last-name"
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => {
-                      setLastName(e.target.value);
-                      if (signupErrors.lastName) {
-                        setSignupErrors((prev) => ({ ...prev, lastName: '' }));
-                      }
-                      if (signupSubmitError) {
-                        setSignupSubmitError('');
-                      }
-                    }}
-                    placeholder="dela Cruz"
-                    required
-                    className={inputClass}
-                  />
-                </div>
-                {signupErrors.lastName && <p className="text-[10px] text-red-600 font-sans">{signupErrors.lastName}</p>}
-              </div>
-            </div>
-
-            {/* Student ID */}
-            <div className="flex flex-col gap-1">
-              <label className={labelClass} htmlFor="student-id">Student ID</label>
-              <div className={iconWrap}>
-                <span className={iconSlotClass}>
-                  <Hash className="text-[#004225] w-4 h-4" />
-                </span>
-                <input
-                  id="student-id"
-                  type="text"
-                  value={studentId}
-                  onChange={(e) => {
-                    setStudentId(e.target.value);
-                    if (signupErrors.studentId) {
-                      setSignupErrors((prev) => ({ ...prev, studentId: '' }));
-                    }
-                    if (signupSubmitError) {
-                      setSignupSubmitError('');
-                    }
-                  }}
-                  placeholder="e.g. 2024-12345"
-                  required
-                  className={inputClass}
-                />
-              </div>
-              {signupErrors.studentId && <p className="text-[10px] text-red-600 font-sans">{signupErrors.studentId}</p>}
-            </div>
-
-            {/* Email */}
-            <div className="flex flex-col gap-1">
-              <label className={labelClass} htmlFor="signup-email">Email</label>
-              <div className={iconWrap}>
-                <span className={iconSlotClass}>
-                  <Mail className="text-[#004225] w-4 h-4" />
-                </span>
-                <input
-                  id="signup-email"
-                  type="email"
-                  value={signupEmail}
-                  onChange={(e) => {
-                    setSignupEmail(e.target.value);
-                    if (signupErrors.email) {
-                      setSignupErrors((prev) => ({ ...prev, email: '' }));
-                    }
-                    if (signupSubmitError) {
-                      setSignupSubmitError('');
-                    }
-                  }}
-                  placeholder="student@vsu.edu.ph"
-                  required
-                  className={inputClass}
-                />
-              </div>
-              {signupErrors.email && <p className="text-[10px] text-red-600 font-sans">{signupErrors.email}</p>}
-            </div>
-
-            {/* Password */}
-            <div className="flex flex-col gap-1">
-              <label className={labelClass} htmlFor="signup-password">Password</label>
-              <div className={iconWrap}>
-                <span className={iconSlotClass}>
-                  <Key className="text-[#004225] w-4 h-4" />
-                </span>
-                <input
-                  id="signup-password"
-                  type={showSignupPassword ? 'text' : 'password'}
-                  value={signupPassword}
-                  onChange={(e) => {
-                    setSignupPassword(e.target.value);
-                    if (signupErrors.password) {
-                      setSignupErrors((prev) => ({ ...prev, password: '' }));
-                    }
-                    if (signupSubmitError) {
-                      setSignupSubmitError('');
-                    }
-                  }}
-                  placeholder="Min. 6 characters"
-                  required
-                  className={inputClass}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowSignupPassword(!showSignupPassword)}
-                  className="text-gray-400 hover:text-[#004225] transition-colors focus:outline-none flex items-center justify-center shrink-0"
-                >
-                  {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-              {signupErrors.password && <p className="text-[10px] text-red-600 font-sans">{signupErrors.password}</p>}
-            </div>
-
-            {/* Confirm Password */}
-            <div className="flex flex-col gap-1">
-              <label className={labelClass} htmlFor="signup-confirm">Confirm Password</label>
-              <div className={iconWrap}>
-                <span className={iconSlotClass}>
-                  <Key className="text-[#004225] w-4 h-4" />
-                </span>
-                <input
-                  id="signup-confirm"
-                  type={showSignupPassword ? 'text' : 'password'}
-                  value={signupConfirm}
-                  onChange={(e) => {
-                    setSignupConfirm(e.target.value);
-                    if (signupErrors.confirm) {
-                      setSignupErrors((prev) => ({ ...prev, confirm: '' }));
-                    }
-                    if (signupSubmitError) {
-                      setSignupSubmitError('');
-                    }
-                  }}
-                  placeholder="Re-enter password"
-                  required
-                  className={inputClass}
-                />
-              </div>
-              {signupErrors.confirm && <p className="text-[10px] text-red-600 font-sans">{signupErrors.confirm}</p>}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoggingIn}
-            className="w-full h-12 bg-[#004225] text-[#CBA052] font-mono text-xs uppercase tracking-widest font-extrabold rounded-2xl flex items-center justify-center gap-2 hover:bg-[#00301a] active:scale-[0.98] transition-all shadow-md disabled:opacity-50 mt-1"
-          >
-            {isLoggingIn ? (
-              <span className="animate-pulse">Creating Account...</span>
-            ) : (
-              <>
-                <span>Create Account</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-
-          <div className="text-center">
-            <p className="font-sans text-xs text-gray-500 normal-case">
-              Already have an account?{' '}
-              <button
-                type="button"
-                onClick={() => setMode('login')}
-                className="text-[#004225] font-black underline underline-offset-2"
-              >
-                Sign in
-              </button>
-            </p>
-          </div>
-        </form>
-      )}
+      </section>
     </div>
   );
 }

@@ -77,6 +77,29 @@ function buildProfile(userId: string, meta: Record<string, any>, email: string):
 }
 
 // =========================================================================
+// HELPER: Validate that decoded bytes actually match a real image format
+// by checking "magic bytes" (file signature) instead of trusting the
+// data:image/... prefix, which is just a string the client can fake.
+// =========================================================================
+function isValidImageBuffer(buffer: Buffer): boolean {
+  if (buffer.length < 4) return false;
+
+  const isJpeg = buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+  const isPng =
+    buffer[0] === 0x89 && buffer[1] === 0x50 &&
+    buffer[2] === 0x4E && buffer[3] === 0x47;
+
+  return isJpeg || isPng;
+}
+
+// =========================================================================
+// HELPER: Strip anything unsafe from an ID before it's used in a file path.
+// =========================================================================
+function sanitizeId(id: string): string {
+  return String(id).replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+// =========================================================================
 // API ENDPOINTS
 // =========================================================================
 
@@ -315,12 +338,14 @@ app.get('/api/stamps', async (req, res) => {
     return res.status(400).json({ error: 'User ID is required' });
   }
 
+  const safeUserId = sanitizeId(userId);
+
   if (supabaseAdmin) {
     try {
       const { data, error } = await supabaseAdmin
         .from('stamps')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', safeUserId);
 
       if (error) {
         console.error('Error querying Supabase stamps:', error);
@@ -333,7 +358,7 @@ app.get('/api/stamps', async (req, res) => {
   }
 
   // Fallback
-  const userStamps = localStamps[userId] || [];
+  const userStamps = localStamps[safeUserId] || [];
   res.json({ stamps: userStamps, source: 'local' });
 });
 
@@ -345,9 +370,32 @@ app.post('/api/stamps/upload', async (req, res) => {
     return res.status(400).json({ error: 'Missing required fields: userId, landmarkId, or photoBase64' });
   }
 
+  // ── Sanitize IDs before they're ever used in a file path or storage key ──
+  const safeUserId = sanitizeId(userId);
+  const safeLandmarkId = sanitizeId(landmarkId);  
+
+  if (!safeUserId || !safeLandmarkId) {
+    return res.status(400).json({ error: 'Invalid user or landmark identifier.' });
+  }
+
   const base64Data = photoBase64.replace(/^data:image\/\w+;base64,/, '');
   const buffer = Buffer.from(base64Data, 'base64');
-  const filename = `${userId}-${landmarkId}-${Date.now()}.jpg`;
+
+  // ── Size check: 5MB limit, measured on the actual decoded bytes ──
+  const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+  if (buffer.length === 0) {
+    return res.status(400).json({ error: 'Photo data is empty or corrupted. Please try again.' });
+  }
+  if (buffer.length > MAX_SIZE_BYTES) {
+    return res.status(400).json({ error: 'Photo is too large. Please use an image under 5MB.' });
+  }
+
+  // ── Type check: verify actual file signature, not just the claimed MIME type ──
+  if (!isValidImageBuffer(buffer)) {
+    return res.status(400).json({ error: 'File does not appear to be a valid JPEG or PNG image.' });
+  }
+
+  const filename = `${safeUserId}-${safeLandmarkId}-${Date.now()}.jpg`;
 
   let photoUrl = '';
 
@@ -356,7 +404,7 @@ app.post('/api/stamps/upload', async (req, res) => {
     try {
       const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
         .from('stamps')
-        .upload(`${userId}/${landmarkId}.jpg`, buffer, {
+        .upload(`${safeUserId}/${safeLandmarkId}.jpg`, buffer, {
           contentType: 'image/jpeg',
           upsert: true
         });
@@ -366,7 +414,7 @@ app.post('/api/stamps/upload', async (req, res) => {
       } else {
         const { data: urlData } = supabaseAdmin.storage
           .from('stamps')
-          .getPublicUrl(`${userId}/${landmarkId}.jpg`);
+          .getPublicUrl(`${safeUserId}/${safeLandmarkId}.jpg`);
         
         photoUrl = urlData?.publicUrl || '';
       }
@@ -391,8 +439,8 @@ app.post('/api/stamps/upload', async (req, res) => {
 
   const newStamp = {
     id: `stamp-${Date.now()}`,
-    user_id: userId,
-    landmark_id: landmarkId,
+    user_id: safeUserId,
+    landmark_id: safeLandmarkId,
     photo_url: photoUrl,
     stamped_at: new Date().toISOString()
   };
@@ -403,12 +451,12 @@ app.post('/api/stamps/upload', async (req, res) => {
       const { data, error } = await supabaseAdmin
         .from('stamps')
         .upsert({
-          user_id: userId,
-          landmark_id: landmarkId,
+          user_id: safeUserId,
+          landmark_id: safeLandmarkId,
           photo_url: photoUrl,
           stamped_at: new Date().toISOString()
         }, { onConflict: 'user_id,landmark_id' })
-        .select();
+        .select();  
 
       if (error) {
         console.error('Error inserting stamp in Supabase:', error);
@@ -421,13 +469,13 @@ app.post('/api/stamps/upload', async (req, res) => {
   }
 
   // Fallback insert/update in memory
-  if (!localStamps[userId]) {
-    localStamps[userId] = [];
+  if (!localStamps[safeUserId]) {
+    localStamps[safeUserId] = [];
   }
 
   // Remove existing stamp for same landmark if it exists
-  localStamps[userId] = localStamps[userId].filter(s => s.landmark_id !== landmarkId);
-  localStamps[userId].push(newStamp);
+  localStamps[safeUserId] = localStamps[safeUserId].filter(s => s.landmark_id !== safeLandmarkId);
+  localStamps[safeUserId].push(newStamp);
 
   res.json({ stamp: newStamp, source: 'local' });
 });

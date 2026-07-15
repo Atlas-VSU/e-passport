@@ -509,7 +509,7 @@ export default function App() {
             <div className="absolute inset-0 bg-radial-gradient(circle_at_2px_2px,rgba(0,66,37,0.02)_1px,transparent_0) bg-size-[16px_16px]-events-none z-0" />
 
             {/* Top Navigation Bar */}
-            <header className="bg-[#004225] pt-[max(1.25rem,env(safe-area-inset-top))] px-4 pb-7 text-white rounded-b-[40px] shadow-lg relative z-10 overflow-hidden flex flex-col gap-4">
+            <header className="bg-[#004225] pt-[max(1.25rem,env(safe-area-inset-top))] px-4 pb-4 text-white rounded-b-[40px] shadow-lg relative z-10 overflow-hidden flex flex-col gap-4">
               {/* sheen + guilloché texture */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_42%)]" />
               <div
@@ -519,7 +519,6 @@ export default function App() {
                 }}
                 aria-hidden="true"
               />
-              <div className="absolute inset-x-4 bottom-3 h-px bg-[#CBA052]/40" />
 
               <div className="relative flex justify-between items-center gap-1.5">
                 <div className="flex items-center gap-2 shrink-0 max-w-[36%]">

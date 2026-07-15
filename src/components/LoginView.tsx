@@ -236,41 +236,43 @@ export default function LoginView({ onLogin, onSignUp, isLoggingIn, authError, o
 
             <div className="relative space-y-4 rounded-3xl border border-[#004225]/10 bg-white p-4">
               <div className="grid gap-4">
-                <div className="space-y-1">
-                  <p className={labelClass}>First Name</p>
-                  <div className={iconWrap}>
-                    <span className={iconSlotClass}>
-                      <User className="text-[#004225] w-4 h-4" />
-                    </span>
-                    <input
-                      id="first-name"
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="Juan"
-                      required
-                      className={inputClass}
-                      autoComplete="given-name"
-                    />
+                <div className="flex gap-3">
+                  <div className="space-y-1 flex-1">
+                    <p className={labelClass}>First Name</p>
+                    <div className={iconWrap}>
+                      <span className={iconSlotClass}>
+                        <User className="text-[#004225] w-4 h-4" />
+                      </span>
+                      <input
+                        id="first-name"
+                        type="text"
+                        value={firstName}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="Juan"
+                        required
+                        className={inputClass}
+                        autoComplete="given-name"
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="space-y-1">
-                  <p className={labelClass}>Last Name</p>
-                  <div className={iconWrap}>
-                    <span className={iconSlotClass}>
-                      <User className="text-[#004225] w-4 h-4" />
-                    </span>
-                    <input
-                      id="last-name"
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="dela Cruz"
-                      required
-                      className={inputClass}
-                      autoComplete="family-name"
-                    />
+                  <div className="space-y-1 flex-1">
+                    <p className={labelClass}>Last Name</p>
+                    <div className={iconWrap}>
+                      <span className={iconSlotClass}>
+                        <User className="text-[#004225] w-4 h-4" />
+                      </span>
+                      <input
+                        id="last-name"
+                        type="text"
+                        value={lastName}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="dela Cruz"
+                        required
+                        className={inputClass}
+                        autoComplete="family-name"
+                      />
+                    </div>
                   </div>
                 </div>
 

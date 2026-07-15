@@ -433,6 +433,7 @@ export default function App() {
             onSignUp={handleSignUp}
             isLoggingIn={isActionLoading}
             authError={authError}
+            onModeChange={() => setAuthError(null)}
           />
         );
 

@@ -645,45 +645,64 @@ export default function App() {
 
             {/* Next up Footer */}
             {nextLandmark ? (
-              <div className="p-4 px-6 bg-white border-t border-gray-100 flex items-center justify-between z-10 rounded-t-4xl shadow-inner relative">
-                <div className="flex-1 text-left overflow-hidden mr-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    Next up
-                  </p>
-                  <p className="font-black text-[#004225] text-xs md:text-sm truncate">
-                    {nextLandmark.name}
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    setSelectedLandmark(nextLandmark);
-                    setCurrentPage(Page.LANDMARK_DETAIL);
-                  }}
-                  className="bg-[#CBA052] hover:bg-[#b0873e] text-[#004225] font-extrabold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
-                >
-                  <span className="text-sm font-bold">+</span>
-                  <span>STAMP</span>
-                </button>
+            <div className="relative overflow-hidden p-4 px-6 bg-[#004225] border-t border-[#CBA052]/20 flex items-center justify-between z-10 rounded-t-4xl shadow-inner">
+              {/* sheen + guilloché texture, same treatment as the header */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_42%)]" />
+              <div
+                className="absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cdefs%3E%3Cpattern id='g' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 20 C10 0 30 40 40 20' fill='none' stroke='%23f4deb2' stroke-width='1' opacity='0.45'/%3E%3Cpath d='M0 30 C10 10 30 50 40 30' fill='none' stroke='%23d8c184' stroke-width='1' opacity='0.24'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23g)'/%3E%3C/svg%3E")`,
+                }}
+                aria-hidden="true"
+              />
+
+              <div className="relative flex-1 text-left overflow-hidden mr-2">
+                <p className="text-[10px] font-bold text-[#CBA052]/70 uppercase tracking-widest">
+                  Next up
+                </p>
+                <p className="font-black text-white text-xs md:text-sm truncate">
+                  {nextLandmark.name}
+                </p>
               </div>
-            ) : (
-              <div className="p-4 px-6 bg-white border-t border-gray-100 grid gap-2 items-center justify-center z-10 rounded-t-4xl shadow-inner relative">
-                <div className="flex-1 text-center overflow-hidden mr-2">
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                    You've got the whole campus
-                  </p>
-                  <p className="font-black text-[#004225] text-xs md:text-sm truncate">
-                    CONGRATULATIONS!
-                  </p>
-                </div>
-                <button
-                  onClick={() => setCurrentPage(Page.E_PASSPORT)}
-                  className="bg-[#CBA052] hover:bg-[#b0873e] text-[#004225] font-extrabold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>DOWNLOAD PASSPORT</span>
-                </button>
+              <button
+                onClick={() => {
+                  setSelectedLandmark(nextLandmark);
+                  setCurrentPage(Page.LANDMARK_DETAIL);
+                }}
+                className="relative bg-[#CBA052] hover:bg-[#b0873e] text-[#004225] font-extrabold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
+              >
+                <span className="text-sm font-bold">+</span>
+                <span>STAMP</span>
+              </button>
+            </div>
+          ) : (
+            <div className="relative overflow-hidden p-4 px-6 bg-[#004225] border-t border-[#CBA052]/20 grid gap-2 items-center justify-center z-10 rounded-t-4xl shadow-inner">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_42%)]" />
+              <div
+                className="absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cdefs%3E%3Cpattern id='g' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 20 C10 0 30 40 40 20' fill='none' stroke='%23f4deb2' stroke-width='1' opacity='0.45'/%3E%3Cpath d='M0 30 C10 10 30 50 40 30' fill='none' stroke='%23d8c184' stroke-width='1' opacity='0.24'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23g)'/%3E%3C/svg%3E")`,
+                }}
+                aria-hidden="true"
+              />
+
+              <div className="relative flex-1 text-center overflow-hidden mr-2">
+                <p className="text-[10px] font-bold text-[#CBA052]/70 uppercase tracking-widest">
+                  You have completed the tour
+                </p>
+                <p className="font-black text-white text-xs md:text-sm truncate">
+                  CONGRATULATIONS!
+                </p>
               </div>
-            )}
+              <button
+                onClick={() => setCurrentPage(Page.E_PASSPORT)}
+                className="relative bg-[#CBA052] hover:bg-[#b0873e] text-[#004225] font-extrabold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
+              >
+                <Download className="w-4 h-4" />
+                <span>DOWNLOAD PASSPORT</span>
+              </button>
+            </div>
+          )}
           </div>
         );
       }

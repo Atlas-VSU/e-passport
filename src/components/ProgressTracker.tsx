@@ -12,7 +12,7 @@ const GREEN_DARK = "#00301A";
 const HEAD_IMAGE_URL: string | null = "public/head-marker.png";
 
 function greenShade(t: number) {
-  const lightness = 20 + t * 30; // widened + raised floor so it stays legible under glare
+  const lightness = 20 + t * 30;
   return `hsl(151, 55%, ${lightness}%)`;
 }
 
@@ -28,7 +28,39 @@ export default function ProgressTracker({
   const segments = Array.from({ length: Math.max(totalCount, 1) });
 
   return (
-    <div className="bg-white/10 rounded-2xl p-4 pt-4 text-white border border-[#CBA052]/20 shadow-inner backdrop-blur-sm">
+    <div className="bg-white/15 rounded-2xl p-4 pt-4 text-white border border-[#CBA052]/20 shadow-inner backdrop-blur-sm">
+      <style>{`
+        /* continuous idle sway — small amplitude, slow, loops forever */
+        @keyframes headMarkerIdle {
+          0%, 100% { transform: rotate(-3deg); }
+          50%      { transform: rotate(3deg); }
+        }
+        .head-marker-idle {
+          transform-origin: 50% 100%;
+          animation: headMarkerIdle 2.6s ease-in-out infinite;
+        }
+
+        /* one-off burst on progress change — bigger, faster, settles back to 0 */
+        @keyframes headMarkerWobble {
+          0%   { transform: rotate(0deg); }
+          20%  { transform: rotate(-14deg); }
+          50%  { transform: rotate(12deg); }
+          75%  { transform: rotate(-6deg); }
+          100% { transform: rotate(0deg); }
+        }
+        .head-marker-wobble {
+          transform-origin: 50% 100%;
+          animation: headMarkerWobble 0.7s ease-in-out;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .head-marker-idle,
+          .head-marker-wobble {
+            animation: none;
+          }
+        }
+      `}</style>
+
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="font-serif text-[10px] font-bold tracking-[0.18em] uppercase text-[#CBA052]">
@@ -57,18 +89,24 @@ export default function ProgressTracker({
           className="absolute top-0 -translate-x-1/2 transition-all duration-700 ease-out flex flex-col items-center"
           style={{ left: `clamp(22px, ${percent}%, calc(100% - 22px))` }}
         >
-          <div className="w-10 h-10 flex items-center justify-center overflow-hidden">
-            {HEAD_IMAGE_URL ? (
-              <img
-                src={HEAD_IMAGE_URL}
-                alt="Current progress"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <ImageIcon className="w-4 h-4 text-[#CBA052]/60" />
-            )}
+          {/* outer: persistent idle sway, always running */}
+          <div className="head-marker-idle">
+            {/* inner: remounts on stampsCount change, replays the bigger wobble once */}
+            <div
+              key={stampsCount}
+              className="head-marker-wobble w-13 h-13 flex items-center justify-center overflow-hidden"
+            >
+              {HEAD_IMAGE_URL ? (
+                <img
+                  src={HEAD_IMAGE_URL}
+                  alt="Current progress"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <ImageIcon className="w-4 h-4 text-[#CBA052]/60" />
+              )}
+            </div>
           </div>
-          {/* larger, drop-shadowed pointer so it reads clearly against the bar instead of blending in */}
           <div
             className="w-0 h-0"
             style={{
@@ -92,8 +130,8 @@ export default function ProgressTracker({
               style={{
                 background: filled ? greenShade(t) : "#0A1F14",
                 border: filled
-                  ? "0.5px solid rgba(255,255,255,0.35)"
-                  : `0.5px solid ${GOLD}55`,
+                  ? "1px solid rgba(255,255,255,0.35)"
+                  : `1px solid ${GOLD}55`,
               }}
             />
           );

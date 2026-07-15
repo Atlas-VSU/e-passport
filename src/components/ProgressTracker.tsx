@@ -9,7 +9,7 @@ interface ProgressTrackerProps {
 const GOLD = "#CBA052";
 const GREEN_DARK = "#00301A";
 
-const HEAD_IMAGE_URL: string | null = "public/head-marker.png";
+const HEAD_IMAGE_URL: string | null = "./head-marker.png";
 
 function greenShade(t: number) {
   const lightness = 20 + t * 30;

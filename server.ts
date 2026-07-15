@@ -461,7 +461,7 @@ app.post('/api/stamps/upload', async (req, res) => {
       if (error) {
         console.error('Error inserting stamp in Supabase:', error);
       } else {
-        return res.json({ stamp: data?.[0] || newStamp, source: 'supabase' });
+        return res.json({ stamp: data?.[0] || newStamp, source: 'supabase', message: 'Landmark stamped successfully!' });
       }
     } catch (err) {
       console.error('Failed to upsert stamp to Supabase:', err);
@@ -477,7 +477,7 @@ app.post('/api/stamps/upload', async (req, res) => {
   localStamps[safeUserId] = localStamps[safeUserId].filter(s => s.landmark_id !== safeLandmarkId);
   localStamps[safeUserId].push(newStamp);
 
-  res.json({ stamp: newStamp, source: 'local' });
+  res.json({ stamp: newStamp, source: 'local', message: 'Landmark stamped successfully!' });
 });
 
 // =========================================================================

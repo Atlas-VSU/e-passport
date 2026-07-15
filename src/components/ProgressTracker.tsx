@@ -26,7 +26,6 @@ export default function ProgressTracker({
       : 0;
   const isComplete = totalCount > 0 && stampsCount === totalCount;
   const segments = Array.from({ length: Math.max(totalCount, 1) });
-  const pad = (n: number) => String(n).padStart(2, "0");
 
   return (
     <div className="bg-white/10 rounded-2xl p-4 pt-4 text-white border border-[#CBA052]/20 shadow-inner backdrop-blur-sm">
@@ -41,9 +40,9 @@ export default function ProgressTracker({
         </div>
         <div className="text-right">
           <p className="font-serif text-xl font-bold text-white leading-none tracking-wide">
-            {pad(stampsCount)}
+            {stampsCount}
             <span className="text-white/40 mx-0.5 font-normal">/</span>
-            {pad(totalCount)}
+            {totalCount}
           </p>
           <p className="font-mono text-[10px] tracking-[0.15em] uppercase text-[#CBA052]/70 mt-1">
             Entries Recorded

@@ -63,20 +63,20 @@ export default function ProgressTracker({
 
       <div className="flex items-start justify-between mb-3">
         <div>
-          <p className="font-serif text-[12px] font-bold tracking-[0.18em] uppercase text-[#CBA052]">
+          <p className="font-serif text-[10px] font-bold tracking-[0.18em] uppercase text-[#CBA052]">
             Record of Entries
           </p>
-          <p className="font-mono text-[10px] tracking-[0.15em] uppercase text-white/50 mt-1">
+          <p className="font-mono text-[8px] tracking-[0.15em] uppercase text-white/50 mt-1">
             Status — {isComplete ? "Journey Complete" : "In Progress"}
           </p>
         </div>
         <div className="text-right">
-          <p className="font-serif text-xl font-bold text-white leading-none tracking-wide">
+          <p className="font-serif text-md font-bold text-white leading-none tracking-wide">
             {stampsCount}
             <span className="text-white/40 mx-0.5 font-normal">/</span>
             {totalCount}
           </p>
-          <p className="font-mono text-[10px] tracking-[0.15em] uppercase text-[#CBA052]/70 mt-1">
+          <p className="font-mono text-[8px] tracking-[0.15em] uppercase text-[#CBA052]/70 mt-1">
             Entries Recorded
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function ProgressTracker({
 
       <div className="h-px bg-[#CBA052]/25 mb-0.5" />
 
-      <div className="relative h-13 mb-1.5">
+      <div className="relative h-13">
         <div
           className="absolute top-0 -translate-x-1/2 transition-all duration-700 ease-out flex flex-col items-center"
           style={{ left: `clamp(22px, ${percent}%, calc(100% - 22px))` }}
@@ -108,11 +108,11 @@ export default function ProgressTracker({
             </div>
           </div>
           <div
-            className="w-0 h-0 -mt-px"
+            className="w-0 h-0"
             style={{
-              borderLeft: "7px solid transparent",
-              borderRight: "7px solid transparent",
-              borderTop: `9px solid ${GOLD}`,
+              borderLeft: "5px solid transparent",
+              borderRight: "5px solid transparent",
+              borderTop: `6px solid ${GOLD}`,
               filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.35))",
             }}
           />
@@ -126,7 +126,7 @@ export default function ProgressTracker({
           return (
             <div
               key={i}
-              className="h-4 flex-1 rounded-[3px] transition-colors duration-500"
+              className="h-2 flex-1 rounded-[3px] transition-colors duration-500"
               style={{
                 background: filled ? greenShade(t) : "#0A1F14",
                 border: filled

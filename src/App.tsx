@@ -16,6 +16,7 @@ import CompletionView from "./components/CompletionView";
 import { getSupabase } from "./lib/supabase/client";
 import { LogOut, Loader2, Download } from "lucide-react";
 import { createPortal } from "react-dom";
+import EPassportView from "./components/EPassportView";
 
 // Helper: safely parse JSON without throwing on HTML error pages
 async function safeJson(res: Response): Promise<any> {
@@ -36,6 +37,7 @@ enum Page {
   LANDMARK_DETAIL,
   STAMP_CONFIRMATION,
   COMPLETION,
+  E_PASSPORT
 }
 
 export default function App() {
@@ -507,7 +509,7 @@ export default function App() {
             <div className="absolute inset-0 bg-radial-gradient(circle_at_2px_2px,rgba(0,66,37,0.02)_1px,transparent_0) bg-size-[16px_16px]-events-none z-0" />
 
             {/* Top Navigation Bar */}
-            <header className="bg-[#004225] pt-[max(1.25rem,env(safe-area-inset-top))] px-4 pb-7 text-white rounded-b-[40px] shadow-lg relative z-10 overflow-hidden flex flex-col gap-4">
+            <header className="bg-[#004225] pt-[max(1.25rem,env(safe-area-inset-top))] px-4 pb-4 text-white rounded-b-[40px] shadow-lg relative z-10 overflow-hidden flex flex-col gap-4">
               {/* sheen + guilloché texture */}
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_42%)]" />
               <div
@@ -517,7 +519,6 @@ export default function App() {
                 }}
                 aria-hidden="true"
               />
-              <div className="absolute inset-x-4 bottom-3 h-px bg-[#CBA052]/40" />
 
               <div className="relative flex justify-between items-center gap-1.5">
                 <div className="flex items-center gap-2 shrink-0 max-w-[36%]">
@@ -675,7 +676,7 @@ export default function App() {
                   </p>
                 </div>
                 <button
-                  onClick={() => {}}
+                  onClick={() => setCurrentPage(Page.E_PASSPORT)}
                   className="bg-[#CBA052] hover:bg-[#b0873e] text-[#004225] font-extrabold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
                 >
                   <Download className="w-4 h-4" />
@@ -719,21 +720,19 @@ export default function App() {
           <CompletionView
             landmarks={landmarks}
             stamps={stamps}
-            userName={
-              currentUser?.first_name ||
-              currentUser?.name ||
-              "Gladiator Visitor"
-            }
-            onReset={() => {
-              if (
-                confirm(
-                  "Are you sure you want to restart your campus tour? This will reset your stamp collection.",
-                )
-              ) {
-                setStamps([]);
-                setCurrentPage(Page.PASSPORT);
-              }
-            }}
+            userName={currentUser?.first_name || currentUser?.name || 'Gladiator Visitor'}
+            onBackToMap={() => setCurrentPage(Page.PASSPORT)}
+            onShowPassport={() => setCurrentPage(Page.E_PASSPORT)}
+          />
+        );
+
+      case Page.E_PASSPORT:
+        return (
+          <EPassportView
+            landmarks={landmarks}
+            stamps={stamps}
+            currentUser={currentUser}
+            onBack={() => setCurrentPage(Page.PASSPORT)}
           />
         );
 
@@ -744,13 +743,23 @@ export default function App() {
 
   return (
     <>
+      {/* Device-gate: touch input OR width < 1280px → app view. Fine pointer + hover + wide → blocked screen. */}
+      <style>{`
+        .app-shell { display: flex; }
+        .desktop-blocked { display: none; }
+        @media (hover: hover) and (pointer: fine) and (min-width: 1280px) {
+          .app-shell { display: none; }
+          .desktop-blocked { display: flex; }
+        }
+      `}</style>
+
       {/* ── Mobile / Tablet: full screen app ── */}
-      <div className="lg:hidden min-h-screen w-full flex flex-col bg-[#004225] font-sans text-[#1A1A1A] antialiased">
+      <div className="app-shell min-h-screen w-full flex-col bg-[#004225] font-sans text-[#1A1A1A] antialiased mx-auto max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl">
         {renderCurrentView()}
       </div>
 
       {/* ── Desktop: not supported message ── */}
-      <div className="hidden lg:flex min-h-screen w-full flex-col items-center justify-center bg-[#004225] text-white gap-6 p-8">
+      <div className="desktop-blocked min-h-screen w-full flex-col items-center justify-center bg-[#004225] text-white gap-6 p-8">
         <div className="w-20 h-20 rounded-full bg-[#CBA052] flex items-center justify-center shadow-xl">
           <svg
             xmlns="http://www.w3.org/2000/svg"

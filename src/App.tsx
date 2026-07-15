@@ -13,6 +13,7 @@ import LoginView from './components/LoginView';
 import LandmarkDetailView from './components/LandmarkDetailView';
 import StampConfirmationView from './components/StampConfirmationView';
 import CompletionView from './components/CompletionView';
+import EPassportView from './components/EPassportView';
 import { getSupabase } from './lib/supabase/client';
 import { LogOut, Loader2, Download } from 'lucide-react';
 
@@ -34,7 +35,8 @@ enum Page {
   PASSPORT,
   LANDMARK_DETAIL,
   STAMP_CONFIRMATION,
-  COMPLETION
+  COMPLETION,
+  E_PASSPORT
 }
 
 export default function App() {
@@ -537,7 +539,7 @@ export default function App() {
                   <p className="font-black text-[#004225] text-xs md:text-sm truncate">CONGRATULATIONS!</p>
                 </div>
                 <button
-                  onClick={() => { }}
+                  onClick={() => setCurrentPage(Page.E_PASSPORT)}
                   className="bg-[#CBA052] hover:bg-[#b0873e] text-[#004225] font-extrabold text-xs tracking-wider uppercase px-5 py-3 rounded-2xl flex items-center gap-1.5 active:scale-95 transition-all shadow-sm"
                 >
                   <Download className="w-4 h-4" />
@@ -582,12 +584,18 @@ export default function App() {
             landmarks={landmarks}
             stamps={stamps}
             userName={currentUser?.first_name || currentUser?.name || 'Gladiator Visitor'}
-            onReset={() => {
-              if (confirm('Are you sure you want to restart your campus tour? This will reset your stamp collection.')) {
-                setStamps([]);
-                setCurrentPage(Page.PASSPORT);
-              }
-            }}
+            onBackToMap={() => setCurrentPage(Page.PASSPORT)}
+            onShowPassport={() => setCurrentPage(Page.E_PASSPORT)}
+          />
+        );
+
+      case Page.E_PASSPORT:
+        return (
+          <EPassportView
+            landmarks={landmarks}
+            stamps={stamps}
+            currentUser={currentUser}
+            onBack={() => setCurrentPage(Page.PASSPORT)}
           />
         );
 

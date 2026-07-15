@@ -121,14 +121,14 @@ export default function LoginView({
 
         <header className="relative flex flex-col items-center text-center gap-4">
           <div className="flex items-center justify-center gap-5 px-3 py-2 backdrop-blur-sm">
-            <div className="w-15 h-15 md:w-17 md:h-17 bg-[#F6EEDC] rounded-2xl pt-1.5 pb-1.5 flex items-center justify-center overflow-hidden ">
+            <div className="w-15 h-15 md:w-17 md:h-17 bg-[#004225]   flex items-center justify-center overflow-hidden ">
               <img
-                className="h-full w-auto object-contain"
+                className="h-full w-full object-contain"
                 src="/vsu-brand-logo.png"
                 alt="Visayas State University Seal"
               />
             </div>
-            <div className="w-15 h-15 md:w-17 md:h-17 bg-[#004225] rounded-full flex items-center justify-center overflow-hidden ">
+            <div className="w-15 h-15 md:w-17 md:h-17 bg-[#004225] flex items-center justify-center overflow-hidden ">
               <img
                 className="w-full h-full"
                 src="/ussc-logo.png"

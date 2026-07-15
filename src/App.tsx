@@ -454,63 +454,74 @@ export default function App() {
             <div className="absolute inset-0 bg-radial-gradient(circle_at_2px_2px,rgba(0,66,37,0.02)_1px,transparent_0) [background-size:16px_16px] pointer-events-none z-0" />
 
             {/* Top Navigation Bar */}
-            <div className="bg-[#004225] p-5 pb-7 text-white rounded-b-[40px] shadow-lg relative z-10 overflow-hidden flex flex-col gap-4">
-  {/* sheen + guilloché texture, same treatment as the login header */}
-  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_42%)]" />
-  <div
-    className="absolute inset-0 opacity-20"
-    style={{
-      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cdefs%3E%3Cpattern id='g' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 20 C10 0 30 40 40 20' fill='none' stroke='%23f4deb2' stroke-width='1' opacity='0.45'/%3E%3Cpath d='M0 30 C10 10 30 50 40 30' fill='none' stroke='%23d8c184' stroke-width='1' opacity='0.24'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23g)'/%3E%3C/svg%3E")`,
-    }}
-  />
-  <div className="absolute inset-x-4 bottom-3 h-px bg-[#CBA052]/40" />
+            <header className="bg-[#004225] pt-[max(1.25rem,env(safe-area-inset-top))] px-4 pb-7 text-white rounded-b-[40px] shadow-lg relative z-10 overflow-hidden flex flex-col gap-4">
+              {/* sheen + guilloché texture */}
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.16),transparent_42%)]" />
+              <div
+                className="absolute inset-0 opacity-20"
+                style={{
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Cdefs%3E%3Cpattern id='g' width='40' height='40' patternUnits='userSpaceOnUse'%3E%3Cpath d='M0 20 C10 0 30 40 40 20' fill='none' stroke='%23f4deb2' stroke-width='1' opacity='0.45'/%3E%3Cpath d='M0 30 C10 10 30 50 40 30' fill='none' stroke='%23d8c184' stroke-width='1' opacity='0.24'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='200' height='200' fill='url(%23g)'/%3E%3C/svg%3E")`,
+                }}
+                aria-hidden="true"
+              />
+              <div className="absolute inset-x-4 bottom-3 h-px bg-[#CBA052]/40" />
 
-  <div className="relative flex justify-between items-center">
-    <div className="flex items-center gap-2">
-      <div className="w-10 h-10 rounded-full bg-[#CBA052] border-2 border-white flex items-center justify-center overflow-hidden shadow-md flex-shrink-0">
-        {currentUser?.avatar_url ? (
-          <img
-            src={currentUser.avatar_url}
-            alt={currentUser.name || 'User'}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="text-[#004225] font-black text-sm">
-            {currentUser?.first_name ? currentUser.first_name[0].toUpperCase() : currentUser?.name ? currentUser.name[0].toUpperCase() : 'E'}
-          </div>
-        )}
-      </div>
-      <div className="flex flex-col text-left">
-        <span className="font-sans text-xs font-black text-white truncate max-w-[80px]">
-          {currentUser?.first_name || currentUser?.name || 'Explorer'}
-        </span>
-        <span className="font-mono text-[8px] text-[#CBA052] uppercase tracking-wider font-extrabold">
-          {currentUser?.student_id ? `ID: ${currentUser.student_id}` : 'Student'}
-        </span>
-      </div>
-    </div>
+              <div className="relative flex justify-between items-center gap-1.5">
+                <div className="flex items-center gap-2 shrink-0 max-w-[36%]">
+                  <div className="w-11 h-11 rounded-full bg-[#CBA052] border-2 border-white flex items-center justify-center overflow-hidden shadow-md shrink-0">
+                    {currentUser?.avatar_url ? (
+                      <img
+                        src={currentUser.avatar_url}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-[#004225] font-black text-sm" aria-hidden="true">
+                        {currentUser?.first_name ? currentUser.first_name[0].toUpperCase() : currentUser?.name ? currentUser.name[0].toUpperCase() : 'E'}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex flex-col text-left min-w-0">
+                    <span className="font-sans text-[14px] font-black text-white truncate">
+                      {currentUser?.first_name || currentUser?.name || 'Explorer'}
+                    </span>
+                    <span className="font-mono text-[11px] text-[#CBA052] uppercase tracking-wider font-extrabold truncate">
+                      {currentUser?.student_id ? `ID ${currentUser.student_id}` : 'Student'}
+                    </span>
+                  </div>
+                </div>
 
-    <div className="text-center flex-1 mx-1">
-      <h1 className="text-[9px] font-bold uppercase tracking-widest text-[#CBA052]">Campus Tour</h1>
-      <p className="text-base font-black italic tracking-wide text-white leading-none">USSC E-PASSPORT</p>
-    </div>
+                {/* Title block */}
+                <div className="text-center flex-1 min-w-0 px-0.5">
+                  <h1 className="text-[10px] font-sans uppercase tracking-[0.32em] text-[#CBA052]/90">
+                    Campus Tour
+                  </h1>
+                  <p className="font-black text-[#F6EEDC] uppercase tracking-[0.28em] drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)] leading-tight truncate">
+                    USSC E-Passport
+                  </p>
+                </div>
 
-    <button
-      onClick={handleLogOut}
-      aria-label="Sign Out"
-      className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all shadow-sm flex-shrink-0"
-    >
-      <LogOut className="w-4 h-4" />
-    </button>
-  </div>
+                <button
+                  onClick={handleLogOut}
+                  aria-label="Sign out"
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
+                  className="w-11 h-11 rounded-full bg-white/10 active:bg-white/25 flex items-center justify-center text-white transition-colors shadow-sm shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                >
+                  <LogOut className="w-4 h-4" aria-hidden="true" />
+                </button>
+              </div>
 
-  <div className="relative">
-    <ProgressTracker
-      stampsCount={stamps.length}
-      totalCount={landmarks.length}
-    />
-  </div>
-</div>
+              <div
+                className="relative"
+                role="group"
+                aria-label={`Passport progress: ${stamps.length} of ${landmarks.length} stamps collected`}
+              >
+                <ProgressTracker
+                  stampsCount={stamps.length}
+                  totalCount={landmarks.length}
+                />
+              </div>
+            </header>
 
             {/* Journey Scrollable Canvas */}
             <div className="flex-1 overflow-y-auto px-4 select-none scrollbar-thin z-10 relative">

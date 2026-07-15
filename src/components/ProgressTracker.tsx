@@ -12,8 +12,8 @@ const GREEN_DARK = "#00301A";
 const HEAD_IMAGE_URL: string | null = "public/head-marker.png";
 
 function greenShade(t: number) {
-  const lightness = 16 + t * 26;
-  return `hsl(151, 42%, ${lightness}%)`;
+  const lightness = 20 + t * 30; // widened + raised floor so it stays legible under glare
+  return `hsl(151, 55%, ${lightness}%)`;
 }
 
 export default function ProgressTracker({
@@ -88,10 +88,12 @@ export default function ProgressTracker({
           return (
             <div
               key={i}
-              className="h-2.5 flex-1 rounded-xs transition-colors duration-500"
+              className="h-4 flex-1 rounded-[3px] transition-colors duration-500"
               style={{
-                background: filled ? greenShade(t) : "rgba(0,48,26,0.45)",
-                boxShadow: filled ? `0 0 5px ${greenShade(t)}` : "none",
+                background: filled ? greenShade(t) : "#0A1F14",
+                border: filled
+                  ? "0.5px solid rgba(255,255,255,0.35)"
+                  : `0.5px solid ${GOLD}55`,
               }}
             />
           );

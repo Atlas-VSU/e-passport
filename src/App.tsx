@@ -606,13 +606,23 @@ export default function App() {
 
   return (
     <>
+      {/* Device-gate: touch input OR width < 1280px → app view. Fine pointer + hover + wide → blocked screen. */}
+      <style>{`
+        .app-shell { display: flex; }
+        .desktop-blocked { display: none; }
+        @media (hover: hover) and (pointer: fine) and (min-width: 1280px) {
+          .app-shell { display: none; }
+          .desktop-blocked { display: flex; }
+        }
+      `}</style>
+
       {/* ── Mobile / Tablet: full screen app ── */}
-      <div className="lg:hidden min-h-screen w-full flex flex-col bg-[#004225] font-sans text-[#1A1A1A] antialiased">
+      <div className="app-shell min-h-screen w-full flex-col bg-[#004225] font-sans text-[#1A1A1A] antialiased mx-auto max-w-md sm:max-w-lg md:max-w-2xl lg:max-w-3xl">
         {renderCurrentView()}
       </div>
 
       {/* ── Desktop: not supported message ── */}
-      <div className="hidden lg:flex min-h-screen w-full flex-col items-center justify-center bg-[#004225] text-white gap-6 p-8">
+      <div className="desktop-blocked min-h-screen w-full flex-col items-center justify-center bg-[#004225] text-white gap-6 p-8">
         <div className="w-20 h-20 rounded-full bg-[#CBA052] flex items-center justify-center shadow-xl">
           <svg xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 text-[#004225]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />

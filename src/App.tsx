@@ -498,14 +498,6 @@ export default function App() {
                   <p className="text-[11px] font-black italic tracking-wide text-white leading-none">USSC E-PASSPORT</p>
                 </div>
 
-                <button
-                  onClick={handleLogOut}
-                  aria-label="Sign out"
-                  style={{ WebkitTapHighlightColor: 'transparent' }}
-                  className="w-11 h-11 rounded-full bg-white/10 active:bg-white/25 flex items-center justify-center text-white transition-colors shadow-sm shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                >
-                  <LogOut className="w-4 h-4" aria-hidden="true" />
-                </button>
                 <div className="flex justify-end basis-[15%] flex-shrink-0">
                   <button
                     onClick={() => setShowLogoutConfirm(true)}

@@ -11,7 +11,7 @@ export default function ProgressTracker({ stampsCount, totalCount }: ProgressTra
 
   return (
     <div className="bg-white/10 rounded-2xl p-4 text-white border border-white/10 shadow-inner">
-      <div className="flex justify-between items-end mb-2">
+      <div className="flex justify-between items-center mb-2">
         <span className="text-xs font-bold tracking-tight uppercase opacity-80">
           {isComplete ? "🎉 Passport Completed" : "Your Journey"}
         </span>

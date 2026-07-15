@@ -476,7 +476,7 @@ export default function App() {
                     <span className="font-sans text-xs font-black text-white truncate w-full">
                       {currentUser?.first_name || currentUser?.name || 'Explorer'}
                     </span>
-                    <span className="font-mono text-[9px] text-[#E2C185] uppercase tracking-wider font-extrabold truncate w-full">
+                    <span className="font-mono text-[9.5px] text-[#E2C185] uppercase tracking-wider font-extrabold truncate w-full">
                       {currentUser?.student_id ? `ID: ${currentUser.student_id}` : 'Student'}
                     </span>
                   </div>

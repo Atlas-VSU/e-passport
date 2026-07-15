@@ -159,7 +159,7 @@ export default function LoginView({
         aria-labelledby="auth-form-heading"
         className="relative z-20 -mt-10 rounded-b-4xl border-2 border-dashed border-[#CBA052]/40 bg-[#FFFDF8] p-4 pt-16 shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden"
       >
-        <div className="absolute inset-x-0 -top-3 h-8 bg-[#FFFDF8] bg-[radial-gradient(circle_at_top,_rgba(255,253,248,0.96)_20%,transparent_20%)] bg-[length:16px_16px]" />
+        <div className="absolute inset-x-0 -top-3 h-8 bg-[#FFFDF8] bg-[radial-gradient(circle_at_top,rgba(255,253,248,0.96)_20%,transparent_20%)] bg-size-[16px_16px]" />
         <div className="absolute inset-x-6 -top-5 h-1 border-t-15 border-dashed border-[#CBA052]/90" />
         <div className="absolute left-1/2 -top-10 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-[#CBA052]/90 bg-[#004225] shadow-sm" />
         <h2 id="auth-form-heading" className="sr-only">

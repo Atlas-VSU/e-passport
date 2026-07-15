@@ -56,6 +56,8 @@ export default function LoginView({
   const [showSignupPassword, setShowSignupPassword] = useState(false);
   const [signupError, setSignupError] = useState("");
 
+  const STUDENT_ID_PATTERN = /^\d{2}-\d-\d{5}$/;
+
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginEmail || !loginPassword) return;
@@ -73,6 +75,12 @@ export default function LoginView({
       !signupPassword
     )
       return;
+    if (!STUDENT_ID_PATTERN.test(studentId)) {
+      setSignupError(
+        "Student ID must be in the format XX-X-XXXXX (e.g. 24-1-00067).",
+      );
+      return;
+    }
     if (signupPassword !== signupConfirm) {
       setSignupError("Passwords do not match.");
       return;
@@ -211,7 +219,7 @@ export default function LoginView({
                     type="email"
                     value={loginEmail}
                     onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="student@vsu.edu.ph"
+                    placeholder="your_email@gmail.com"
                     required
                     className={inputClass}
                     autoComplete="email"
@@ -349,7 +357,10 @@ export default function LoginView({
                       type="text"
                       value={studentId}
                       onChange={(e) => setStudentId(e.target.value)}
-                      placeholder="e.g. 2024-12345"
+                      placeholder="e.g. 24-1-00067"
+                      pattern="\d{2}-\d-\d{5}"
+                      title="Format: XX-X-XXXXX (e.g. 24-1-00067)"
+                      maxLength={10}
                       required
                       className={inputClass}
                     />
@@ -369,7 +380,7 @@ export default function LoginView({
                       type="email"
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
-                      placeholder="student@vsu.edu.ph"
+                      placeholder="your_email@gmail.com"
                       required
                       className={inputClass}
                       autoComplete="email"

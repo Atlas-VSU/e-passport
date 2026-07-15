@@ -138,12 +138,6 @@ export default function LoginView({
           </div>
 
           <div className="flex flex-col items-center gap-2">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#CBA052]/30 bg-[#00321c]/40 px-3 py-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#CBA052]" />
-              <span className="font-sans text-[10px] uppercase tracking-[0.32em] text-[#CBA052]/90">
-                Official Entry Pass
-              </span>
-            </div>
             <h1 className="font-serif text-3xl md:text-4xl font-black text-[#F4D78A] uppercase tracking-[0.28em] drop-shadow-[0_1px_1px_rgba(0,0,0,0.35)]">
               USSC E-Passport
             </h1>

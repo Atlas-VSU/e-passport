@@ -15,6 +15,7 @@ import StampConfirmationView from './components/StampConfirmationView';
 import CompletionView from './components/CompletionView';
 import { getSupabase } from './lib/supabase/client';
 import { LogOut, Loader2, Download } from 'lucide-react';
+import { createPortal } from 'react-dom';
 
 // Helper: safely parse JSON without throwing on HTML error pages
 async function safeJson(res: Response): Promise<any> {
@@ -44,6 +45,7 @@ export default function App() {
   const [selectedLandmark, setSelectedLandmark] = useState<Landmark | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // ──────────────────────────────────────────────────────────────────────────
   // 1. Session check on load — use Supabase client-side SDK directly
@@ -455,7 +457,7 @@ export default function App() {
 
             {/* Top Navigation Bar */}
             <div className="bg-[#004225] p-5 pb-7 text-white rounded-b-[40px] shadow-lg relative z-10 flex flex-col gap-4">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2 basis-[35%] min-w-0">
                 <div className="flex items-center gap-2">
                   <div className="w-10 h-10 rounded-full bg-[#CBA052] border-2 border-white flex items-center justify-center overflow-hidden shadow-md flex-shrink-0">
                     {currentUser?.avatar_url ? (
@@ -470,28 +472,71 @@ export default function App() {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col text-left">
-                    <span className="font-sans text-xs font-black text-white truncate max-w-[80px]">
+                  <div className="flex flex-col min-w-0 text-left">
+                    <span className="font-sans text-xs font-black text-white truncate w-full">
                       {currentUser?.first_name || currentUser?.name || 'Explorer'}
                     </span>
-                    <span className="font-mono text-[8px] text-[#CBA052] uppercase tracking-wider font-extrabold">
+                    <span className="font-mono text-[9px] text-[#E2C185] uppercase tracking-wider font-extrabold truncate w-full">
                       {currentUser?.student_id ? `ID: ${currentUser.student_id}` : 'Student'}
                     </span>
                   </div>
                 </div>
 
-                <div className="text-center flex-1 mx-1">
+                <div className="text-center flex flex-col justify-center basis-[50%] min-w-0 px-1">
                   <h1 className="text-[9px] font-bold uppercase tracking-widest text-[#CBA052]">Campus Tour</h1>
-                  <p className="text-base font-black italic tracking-wide text-white leading-none">USSC E-PASSPORT</p>
+                  <p className="text-[11px] font-black italic tracking-wide text-white leading-none">USSC E-PASSPORT</p>
                 </div>
 
-                <button
-                  onClick={handleLogOut}
-                  aria-label="Sign Out"
-                  className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all shadow-sm flex-shrink-0"
-                >
-                  <LogOut className="w-4 h-4" />
-                </button>
+                <div className="flex justify-end basis-[15%] flex-shrink-0">
+                  <button
+                    onClick={() => setShowLogoutConfirm(true)}
+                    aria-label="Sign Out"
+                    className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all shadow-sm flex-shrink-0"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+
+                  {/* Custom Integrated Confirmation Modal */}
+                  {showLogoutConfirm && typeof document !== 'undefined' && createPortal(
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+                      {/* Card container */}
+                      <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl border border-gray-100 transform scale-100 transition-all relative z-[10000]">
+                        
+                        <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
+                          <LogOut className="w-6 h-6" />
+                        </div>
+                        
+                        <h3 className="text-gray-900 font-sans text-lg font-black mb-2">
+                          Sign Out?
+                        </h3>
+                        <p className="text-gray-500 font-sans text-sm mb-6 leading-relaxed">
+                          Are you sure you want to exit the E-Passport? You can log back in anytime to continue your journey.
+                        </p>
+                        
+                        <div className="flex gap-3">
+                          {/* Cancel Button */}
+                          <button
+                            onClick={() => setShowLogoutConfirm(false)}
+                            className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-700 font-sans font-bold text-sm hover:bg-gray-50 active:scale-98 transition-all"
+                          >
+                            Stay
+                          </button>
+                          {/* Confirm Logout Button */}
+                          <button
+                            onClick={() => {
+                              setShowLogoutConfirm(false);
+                              handleLogOut();
+                            }}
+                            className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-sans font-bold text-sm active:scale-98 transition-all shadow-sm"
+                          >
+                            Sign Out
+                          </button>
+                        </div>
+                      </div>
+                    </div>,
+                    document.body
+                  )}
+                </div>
               </div>
 
               <ProgressTracker

@@ -9,14 +9,10 @@ interface ProgressTrackerProps {
 const GOLD = '#CBA052';
 const GREEN_DARK = '#00301A';
 
-/** Swap this path for your own asset — shown inside the moving head marker.
- *  Leave as null to keep the placeholder frame until you have one ready. */
-const HEAD_IMAGE_URL: string | null = '/head-marker.png';
+const HEAD_IMAGE_URL: string | null = 'public/head-marker.png';
 
-/** Interpolates a shade of green by progress (0 = deep, 1 = brightest)
- *  so filled segments visibly lighten as the journey progresses. */
 function greenShade(t: number) {
-  const lightness = 16 + t * 26; // 16% -> 42%
+  const lightness = 16 + t * 26;
   return `hsl(151, 42%, ${lightness}%)`;
 }
 
@@ -29,7 +25,6 @@ export default function ProgressTracker({ stampsCount, totalCount }: ProgressTra
   return (
     <div className="bg-white/10 rounded-2xl p-4 pt-4 text-white border border-[#CBA052]/20 shadow-inner backdrop-blur-sm">
 
-      {/* ── visa-field style header: label/status left, reference number right ── */}
       <div className="flex items-start justify-between mb-3">
         <div>
           <p className="font-serif text-[12px] font-bold tracking-[0.18em] uppercase text-[#CBA052]">
@@ -49,46 +44,48 @@ export default function ProgressTracker({ stampsCount, totalCount }: ProgressTra
         </div>
       </div>
 
-      <div className="h-px bg-[#CBA052]/25 mb-3.5" />
+      <div className="h-px bg-[#CBA052]/25 mb-0.5" />
 
-      {/* sectioned progress bar with an image-ready head marker */}
-      <div className="relative pt-4">
+      <div className="relative h-[52px] mb-1.5">
         <div
           className="absolute top-0 -translate-x-1/2 transition-all duration-700 ease-out flex flex-col items-center"
-          style={{ left: `${percent}%` }}
+          style={{ left: `clamp(22px, ${percent}%, calc(100% - 22px))` }}
         >
-          <div
-            className="w-7 h-7 rounded-full border-2 shadow-lg overflow-hidden flex items-center justify-center"
-            style={{ borderColor: GOLD, background: GREEN_DARK }}
-          >
+          <div className="w-13 h-13 flex items-center justify-center overflow-hidden">
             {HEAD_IMAGE_URL ? (
               <img src={HEAD_IMAGE_URL} alt="Current progress" className="w-full h-full object-cover" />
             ) : (
-              <ImageIcon className="w-3 h-3 text-[#CBA052]/50" />
+              <ImageIcon className="w-4 h-4 text-[#CBA052]/60" />
             )}
           </div>
+          {/* larger, drop-shadowed pointer so it reads clearly against the bar instead of blending in */}
           <div
-            className="w-0 h-0 -mt-px"
-            style={{ borderLeft: '4px solid transparent', borderRight: '4px solid transparent', borderTop: `5px solid ${GOLD}` }}
+            className="w-0 h-0 -mt-[1px]"
+            style={{
+              borderLeft: '7px solid transparent',
+              borderRight: '7px solid transparent',
+              borderTop: `9px solid ${GOLD}`,
+              filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.35))',
+            }}
           />
         </div>
+      </div>
 
-        <div className="flex gap-[3px]">
-          {segments.map((_, i) => {
-            const filled = i < stampsCount;
-            const t = totalCount > 1 ? i / (totalCount - 1) : 1;
-            return (
-              <div
-                key={i}
-                className="h-2.5 flex-1 rounded-[2px] transition-colors duration-500"
-                style={{
-                  background: filled ? greenShade(t) : 'rgba(0,48,26,0.45)',
-                  boxShadow: filled ? `0 0 5px ${greenShade(t)}` : 'none',
-                }}
-              />
-            );
-          })}
-        </div>
+      <div className="flex gap-[3px]">
+        {segments.map((_, i) => {
+          const filled = i < stampsCount;
+          const t = totalCount > 1 ? i / (totalCount - 1) : 1;
+          return (
+            <div
+              key={i}
+              className="h-2.5 flex-1 rounded-[2px] transition-colors duration-500"
+              style={{
+                background: filled ? greenShade(t) : 'rgba(0,48,26,0.45)',
+                boxShadow: filled ? `0 0 5px ${greenShade(t)}` : 'none',
+              }}
+            />
+          );
+        })}
       </div>
     </div>
   );

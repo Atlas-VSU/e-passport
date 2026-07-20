@@ -1,30 +1,12 @@
 import React, { useState } from 'react';
-import { Check, Camera } from 'lucide-react';
+import { Check, Lock } from 'lucide-react';
 import { Landmark, Stamp } from '../../../types';
+import { seededRandom } from './ProceduralMapCanvas';
 
 interface StickerBookViewProps {
   landmarks: Landmark[];
   stamps: Stamp[];
   onSelectLandmark: (landmark: Landmark) => void;
-}
-
-// Seedable pseudo-random number generator
-function createSeededRandom(seed: number) {
-  let s = seed;
-  return function () {
-    s = (s * 9301 + 49297) % 233280;
-    return s / 233280;
-  };
-}
-
-// Deterministic stamp styling so rotations and offsets are stable across renders
-export function getDeterministicStampStyle(landmarkId: string) {
-  const seed = landmarkId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const rand = createSeededRandom(seed);
-  const rotation = (rand() - 0.5) * 12; // between -6 and +6 degrees
-  const offsetX = (rand() - 0.5) * 6;  // between -3px and +3px
-  const offsetY = (rand() - 0.5) * 6;  // between -3px and +3px
-  return { rotation, offsetX, offsetY };
 }
 
 // Web Audio API Programmatic Stamp Synthesizer
@@ -97,49 +79,53 @@ function StickerTile({ landmark, stamp, idx, onSelect }: StickerTileProps) {
   const [isReplaying, setIsReplaying] = useState(false);
   const isStamped = !!stamp;
 
-  const { rotation, offsetX, offsetY } = getDeterministicStampStyle(landmark.id);
+  // Seeded rotation between -3 and +3 degrees, stable across renders
+  const rotation = (seededRandom(landmark.id, 0) * 6) - 3;
 
   const handleTileClick = () => {
     if (!isStamped) {
-      // Tap to open landmark detail and stamp it
       onSelect();
       return;
     }
 
-    // Play replay animation, thud audio, and haptic feedback
+    // Play replay animations, sound, and haptic feedback
     setIsReplaying(true);
     playStampSound();
     triggerHapticTick();
 
     setTimeout(() => {
       setIsReplaying(false);
-    }, 550);
+    }, 500);
   };
 
   return (
     <button
       onClick={handleTileClick}
-      className={`relative rounded-3xl border aspect-square flex flex-col items-center justify-center p-3 text-center transition-all duration-300 overflow-hidden outline-none focus:ring-2 focus:ring-[#0f6e56] ${
+      className={`relative flex flex-col items-center text-center select-none cursor-pointer outline-none transition-all duration-300 w-full ${isReplaying ? 'animate-stamp-replay' : ''
+        } focus:ring-2 focus:ring-[#CBA052]`}
+      style={
         isStamped
-          ? 'bg-[#F8F3E5] border-[#CBA052]/40 shadow-[0_4px_12px_rgba(15,110,86,0.12)] hover:scale-[1.02] cursor-pointer'
-          : 'bg-[#1a1a1a]/5 border-dashed border-[#0F6E56]/15 hover:bg-[#1a1a1a]/10 cursor-pointer shadow-xs'
-      }`}
+          ? {
+            backgroundColor: 'rgba(15, 40, 25, 0.88)',
+            border: '1.5px solid #CBA052',
+            borderRadius: '12px',
+            padding: '12px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.35), inset 0 0 0 1px rgba(201,161,58,0.10)',
+          }
+          : {
+            backgroundColor: 'rgba(15, 40, 25, 0.40)',
+            border: '1.5px dashed rgba(201,161,58,0.30)',
+            borderRadius: '12px',
+            padding: '12px',
+          }
+      }
     >
-      {/* Visual grain overlay on card surface */}
-      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noise%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.75%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noise)%22 opacity=%220.06%22/%3E%3C/svg%3E')] pointer-events-none opacity-50 z-0" />
-
       {isStamped ? (
-        <div
-          className={`flex flex-col items-center z-10 transition-transform ${
-            isReplaying ? 'stamp-animate' : ''
-          }`}
-          style={{
-            transform: `rotate(${rotation}deg) translate(${offsetX}px, ${offsetY}px)`,
-          }}
-        >
-          {/* Rounded Stamp Graphic with image and checkmark overlay */}
-          <div className="relative w-18 h-18 md:w-20 md:h-20 rounded-full border-[3px] border-[#CBA052] p-1 bg-white shadow-md overflow-hidden flex-shrink-0">
-            <div className="w-full h-full rounded-full overflow-hidden border border-dashed border-[#CBA052]/40">
+        <div className="flex flex-col items-center w-full h-full">
+          {/* Circular Photo Thumbnail (72px, rotated) */}
+          <div className="relative w-[72px] h-[72px] shrink-0" style={{ transform: `rotate(${rotation}deg)` }}>
+            {/* Overflow-hidden inner photo container */}
+            <div className="w-full h-full rounded-full border-[2.5px] border-[#CBA052] bg-white overflow-hidden flex items-center justify-center shadow-md">
               <img
                 src={stamp.photo_url || landmark.photoUrl}
                 alt=""
@@ -147,34 +133,60 @@ function StickerTile({ landmark, stamp, idx, onSelect }: StickerTileProps) {
               />
             </div>
             {/* Ink-stamp check icon */}
-            <div className="absolute bottom-1 right-1 bg-[#0F6E56] border border-white text-white w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-xs">
+            <div className="absolute bottom-0.5 right-0.5 bg-[#0F6E56] border border-white text-white w-4.5 h-4.5 rounded-full flex items-center justify-center shadow-xs z-10">
               <Check className="w-3 h-3" strokeWidth={3.5} />
             </div>
+            {/* Gold pulse ring for replay */}
+            {isReplaying && (
+              <div className="absolute inset-0 rounded-full border-[2.5px] border-[#CBA052] pointer-events-none animate-pulse-ring" />
+            )}
           </div>
-          <span className="font-mono text-[8px] font-bold text-[#0F6E56] uppercase tracking-widest mt-2 block">
-            Landmark 0{idx + 1}
+
+          {/* Stamped Badge pill */}
+          <div className="bg-[#0F6E56] text-[#5DCAA5] rounded-full px-2 py-0.5 mt-[-8px] z-10 shadow-sm">
+            <span className="font-mono text-[7px] font-bold uppercase tracking-widest block leading-none">
+              stamped
+            </span>
+          </div>
+
+          {/* Landmark label code */}
+          <span className="font-mono text-[8px] font-bold text-[#CBA052] uppercase tracking-widest mt-2 block">
+            LANDMARK 0{idx + 1}
           </span>
-          <span className="font-serif text-[11px] font-black text-gray-800 leading-none truncate max-w-full mt-0.5">
+
+          {/* Landmark name */}
+          <span className="font-serif text-[13px] font-black text-white leading-tight truncate max-w-full mt-0.5">
             {landmark.name}
           </span>
-          <span className="font-mono text-[6.5px] font-bold text-[#CBA052] uppercase tracking-widest leading-none mt-1">
-            Stamped
+
+          {/* Thin gold divider line */}
+          <div className="w-full h-px bg-[#CBA052]/20 my-2" />
+
+          {/* Flavor text */}
+          <span className="font-sans text-[9px] italic text-white/50 leading-tight">
+            {landmark.flavorText}
           </span>
         </div>
       ) : (
-        <div className="flex flex-col items-center z-10 text-gray-400">
-          <div className="w-14 h-14 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center mb-2 bg-white/50">
-            <Camera className="w-5 h-5 opacity-40 text-[#0F6E56]" />
+        <div className="flex flex-col items-center w-full h-full">
+          {/* Circular Placeholder */}
+          <div className="w-[72px] h-[72px] rounded-full border-[1.5px] border-dashed border-[#CBA052]/30 bg-black/20 flex items-center justify-center shrink-0">
+            <Lock className="w-5 h-5 text-white/20" />
           </div>
-          <span className="font-mono text-[8px] font-bold text-gray-400 uppercase tracking-widest">
-            Landmark 0{idx + 1}
+
+          {/* Landmark label code */}
+          <span className="font-mono text-[8px] font-bold text-[#CBA052]/40 uppercase tracking-widest mt-2 block">
+            LANDMARK 0{idx + 1}
           </span>
-          <span className="font-serif text-[11px] font-bold text-gray-500 truncate max-w-full leading-tight mt-0.5">
+
+          {/* Landmark name */}
+          <span className="font-serif text-[13px] font-black text-white/40 leading-tight truncate max-w-full mt-0.5">
             {landmark.name}
           </span>
-          <span className="font-mono text-[7px] text-[#0F6E56] uppercase font-bold tracking-wider mt-1.5 flex items-center gap-1">
-            <span className="w-1 h-1 rounded-full bg-[#0F6E56]/40" />
-            Tap to visit
+
+          {/* "tap to visit" text */}
+          <span className="font-mono text-[8px] text-[#CBA052]/50 mt-1.5">
+            tap to visit
           </span>
         </div>
       )}
@@ -185,43 +197,115 @@ function StickerTile({ landmark, stamp, idx, onSelect }: StickerTileProps) {
 export default function StickerBookView({ landmarks, stamps, onSelectLandmark }: StickerBookViewProps) {
   // Sort landmarks by fixed order (1 to 6)
   const sortedLandmarks = [...landmarks].sort((a, b) => a.order - b.order);
+  const isCompleted = stamps.length === landmarks.length;
 
   return (
-    <div className="w-full min-h-[500px] p-4 flex flex-col gap-4 parchment-base">
+    <div
+      className="w-full min-h-full relative select-none"
+      style={{
+        backgroundColor: '#F2E9D3',
+      }}
+    >
+      {/* Light leather texture overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0 animate-fadeIn"
+        style={{
+          backgroundImage: "url('/textures/leather.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          mixBlendMode: 'multiply',
+          opacity: 0.08
+        }}
+      />
+
       <style>{`
-        @keyframes stampSlam {
-          0% { transform: scale(2.2) rotate(-22deg) translate(0, -10px); opacity: 0.3; filter: drop-shadow(0 20px 10px rgba(0,0,0,0.15)); }
-          45% { transform: scale(1) rotate(var(--rot)) translate(0, 0); opacity: 1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
-          60% { transform: scaleY(0.86) scaleX(1.05) rotate(var(--rot)); }
-          100% { transform: scale(1) rotate(var(--rot)) translate(0, 0); opacity: 1; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.15)); }
+        @keyframes stampCardReplay {
+          0% { transform: scale(1); }
+          30% { transform: scale(0.95); }
+          70% { transform: scale(1.04); }
+          100% { transform: scale(1); }
         }
-        .stamp-animate {
-          animation: stampSlam 550ms cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        @keyframes goldPulseRing {
+          0% { transform: scale(1); opacity: 1; }
+          100% { transform: scale(1.4); opacity: 0; }
+        }
+        @keyframes shimmer {
+          0% { transform: translateX(-100%) skewX(-15deg); }
+          100% { transform: translateX(100%) skewX(-15deg); }
+        }
+        .animate-stamp-replay {
+          animation: stampCardReplay 400ms ease-in-out;
+        }
+        .animate-pulse-ring {
+          animation: goldPulseRing 500ms ease-out forwards;
+        }
+        .animate-shimmer {
+          animation: shimmer 2s linear infinite;
         }
       `}</style>
 
-      <div className="flex flex-col text-left">
-        <h2 className="font-serif text-lg font-black text-[#004225] leading-tight">
-          Your collection
-        </h2>
-        <p className="font-sans text-[11px] text-gray-600 leading-normal mt-0.5">
-          Tap stamped badges to replay stamp thuds. Unstamped items can be tapped to visit their camera check-in page.
-        </p>
-      </div>
+      {/* Content wrapper */}
+      <div className="relative z-10 w-full flex flex-col gap-4 px-4 pt-10 mt-0 pb-20">
+        {/* Passport-style section header */}
+        <div className="text-left">
+          <p className="text-[8px] font-mono font-bold uppercase tracking-widest text-[#CBA052]">
+            Viscan E-Pasaporte
+          </p>
+          <h2 className="text-lg font-serif font-black text-[#004225]">
+            Stamp Collection
+          </h2>
+          <p className="text-[10px] text-[#004225]/70 mt-0.5">
+            {stamps.length} of {landmarks.length} landmarks visited
+          </p>
+        </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3.5 mt-1">
-        {sortedLandmarks.map((landmark, idx) => {
-          const stamp = stamps.find((s) => s.landmark_id === landmark.id);
-          return (
-            <StickerTile
-              key={landmark.id}
-              landmark={landmark}
-              stamp={stamp}
-              idx={idx}
-              onSelect={() => onSelectLandmark(landmark)}
+        {/* Completion Banner (shown only when all 6 stamped) */}
+        {isCompleted && (
+          <div
+            className="relative overflow-hidden w-full flex flex-col items-center justify-center text-center"
+            style={{
+              background: 'linear-gradient(135deg, #0F6E56, #004225)',
+              border: '1.5px solid #CBA052',
+              borderRadius: '16px',
+              padding: '16px 20px',
+            }}
+          >
+            {/* Shimmer strip */}
+            <div
+              className="absolute inset-0 pointer-events-none bg-gradient-to-r from-transparent via-white/15 to-transparent animate-shimmer"
+              style={{
+                width: '100%',
+                height: '100%',
+                top: 0,
+                left: 0,
+              }}
             />
-          );
-        })}
+
+            <span className="text-3xl mb-1.5" role="img" aria-label="trophy">🏆</span>
+            <h3 className="font-serif font-black text-lg text-white">
+              Tour Complete
+            </h3>
+            <span className="font-mono text-[#CBA052] text-[9px] font-bold uppercase tracking-widest mt-0.5">
+              All 6 landmarks stamped
+            </span>
+          </div>
+        )}
+
+        {/* 2-column grid */}
+        <div className="grid grid-cols-2 gap-3 items-stretch w-full mt-1">
+          {sortedLandmarks.map((landmark, idx) => {
+            const stamp = stamps.find((s) => s.landmark_id === landmark.id);
+            return (
+              <StickerTile
+                key={landmark.id}
+                landmark={landmark}
+                stamp={stamp}
+                idx={idx}
+                onSelect={() => onSelectLandmark(landmark)}
+              />
+            );
+          })}
+        </div>
       </div>
     </div>
   );

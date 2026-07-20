@@ -8,7 +8,6 @@ import { Page, Profile, Stamp, Landmark } from "../types";
 import { checkSession, signIn, signUp, signOut } from "../features/auth/services/auth";
 import { uploadStampPhoto } from "../features/landmark/services/stamps";
 import { acceptConsent } from "../features/auth/services/profile";
-import { landmarks } from "../lib/landmarks";
 
 export function useEPassport() {
   const [currentPage, setCurrentPage] = useState<Page>(Page.LOADING);
@@ -18,7 +17,7 @@ export function useEPassport() {
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Free-Roam Map & Sticker Book states
-  const [subView, setSubView] = useState<"map" | "stickers">("map");
+  const [subView, setSubView] = useState<"map" | "stickers" | "passport">("map");
   const [justStampedId, setJustStampedId] = useState<string | null>(null);
   const [milestonesFired, setMilestonesFired] = useState({ m3: false, m6: false });
   const [activeCelebration, setActiveCelebration] = useState<3 | 6 | null>(null);

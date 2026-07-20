@@ -15,14 +15,14 @@ interface PassportTourViewProps {
   currentUser: Profile | null;
   stamps: Stamp[];
   landmarks: Landmark[];
-  subView: "map" | "stickers";
-  setSubView: (view: "map" | "stickers") => void;
+  subView: "map" | "stickers" | "passport";
+  setSubView: (view: "map" | "stickers" | "passport") => void;
   justStampedId: string | null;
   setSelectedLandmark: (lm: Landmark | null) => void;
   setCurrentPage: (page: Page) => void;
   showLogoutConfirm: boolean;
   setShowLogoutConfirm: (show: boolean) => void;
-  handleLogOut: () => void;
+  handleLogOut: () => void | Promise<void>;
   activeCelebration: 3 | 6 | null;
 }
 
@@ -40,6 +40,7 @@ export default function PassportTourView({
   handleLogOut,
   activeCelebration,
 }: PassportTourViewProps) {
+  const isComplete = stamps.length === landmarks.length;
   const nextLandmark = landmarks.find(
     (lm) => !stamps.some((s) => s.landmark_id === lm.id)
   );
@@ -119,6 +120,8 @@ export default function PassportTourView({
         <Footer
           subView={subView}
           setSubView={setSubView}
+          isComplete={isComplete}
+          onViewPassport={() => setCurrentPage(Page.E_PASSPORT)}
         />
       </div>
 

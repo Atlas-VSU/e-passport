@@ -7,13 +7,17 @@ import React from "react";
 import { Map, BookOpen } from "lucide-react";
 
 interface FooterProps {
-  subView: "map" | "stickers";
-  setSubView: (view: "map" | "stickers") => void;
+  subView: "map" | "stickers" | "passport";
+  isComplete: boolean;
+  setSubView: (view: "map" | "stickers" | "passport") => void;
+  onViewPassport: () => void;
 }
 
 export default function Footer({
   subView,
+  isComplete,
   setSubView,
+  onViewPassport,
 }: FooterProps) {
   const isMap = subView === "map";
 
@@ -24,22 +28,40 @@ export default function Footer({
 
       {/* Taller container with extra bottom safe area padding */}
       <div className="relative pt-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] px-6 flex justify-center items-center">
-        <button
-          onClick={() => setSubView(isMap ? "stickers" : "map")}
-          className="w-full max-w-xs py-4 px-6 bg-[#CBA052] hover:bg-[#b0873e] active:scale-95 text-[#004225] font-mono text-xs font-bold uppercase tracking-widest rounded-2xl flex items-center justify-center gap-2.5 transition-all shadow-[0_4px_12px_rgba(203,160,82,0.25)] hover:shadow-[0_6px_16px_rgba(203,160,82,0.35)] cursor-pointer"
-        >
-          {isMap ? (
-            <>
+        {
+          isComplete ? (
+            <button
+              onClick={onViewPassport}
+              className="w-auto py-2.5 px-6 bg-[#CBA052] hover:bg-[#b0873e] active:scale-95 text-[#004225] font-mono text-xs font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(203,160,82,0.25)] hover:shadow-[0_6px_16px_rgba(203,160,82,0.35)] cursor-pointer"
+
+            >
               <BookOpen className="w-4 h-4 text-[#004225]" />
-              <span>View my sticker book</span>
-            </>
+              <span>Download E-Passport</span>
+            </button>
           ) : (
-            <>
-              <Map className="w-4 h-4 text-[#004225]" />
-              <span>View tour map</span>
-            </>
-          )}
-        </button>
+            <button
+              onClick={() => setSubView(isMap ? "stickers" : "map")}
+              className="w-auto py-2.5 px-6 bg-[#CBA052] hover:bg-[#b0873e] active:scale-95 text-[#004225] font-mono text-xs font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(203,160,82,0.25)] hover:shadow-[0_6px_16px_rgba(203,160,82,0.35)] cursor-pointer"
+            >
+              {isMap ? (
+                <>
+                  <BookOpen className="w-4 h-4 text-[#004225]" />
+                  <span>View my stamp book</span>
+                </>
+              ) : (
+                <>
+                  <Map className="w-4 h-4 text-[#004225]" />
+                  <span>View tour map</span>
+                </>
+              )}
+            </button>
+
+          )
+        }
+
+
+
+
       </div>
     </div>
   );

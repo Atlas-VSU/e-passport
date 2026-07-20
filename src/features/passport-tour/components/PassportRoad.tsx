@@ -306,13 +306,12 @@ export default function PassportRoad({
         const stamp = stamps.find((s) => s.landmark_id === landmark.id);
 
         const isStamped = !!stamp;
-        const isActive = nudgeLandmarkId === landmark.id;
 
         const isVisible = visibleNodes[landmark.id];
 
         // Node Visual Type Configuration
         // Active: 84px. Others: 68px.
-        const sizeClass = isActive ? 'w-[84px] h-[84px]' : 'w-[68px] h-[68px]';
+        const sizeClass = !isStamped ? 'w-[84px] h-[84px]' : 'w-[68px] h-[68px]';
         
         // Resolve zone specific Icon
         const SpecificIcon = iconMap[landmark.zoneType || ''] || landmark.icon === 'local_library' ? BookOpen : landmark.icon === 'stadium' ? Trophy : landmark.icon === 'verified' ? Award : landmark.icon === 'beach_access' ? Palmtree : landmark.icon === 'nature_people' ? Leaf : Building;
@@ -333,28 +332,16 @@ export default function PassportRoad({
               transform: 'translate(-50%, -50%)',
             }}
           >
-            {/* active next stop indicator above the node */}
-            {isActive && (
-              <div className="absolute -top-[48px] left-1/2 -translate-x-1/2 flex flex-col items-center pointer-events-none">
-                <div className="bg-[#004225] border border-[#C9A13A]/50 text-[#C9A13A] text-[9px] font-mono tracking-widest uppercase px-2.5 py-0.5 rounded-full whitespace-nowrap font-bold shadow-xs">
-                  next stop
-                </div>
-                <div className="w-[1.5px] h-[7px] bg-[#CBA052]" />
-              </div>
-            )}
-
              {/* Tap target circle */}
             <button
               onClick={() => onSelectLandmark(landmark)}
               className={`rounded-full flex items-center justify-center relative transition-all duration-200 cursor-pointer shadow-md select-none outline-none focus:ring-2 focus:ring-[#CBA052] ${sizeClass} ${
                 isStamped
                   ? 'bg-white border-2 border-[#C9A13A] p-0.5 overflow-hidden hover:brightness-105 active:scale-95'
-                  : isActive
-                  ? 'bg-[#0F6E56] border-[3px] border-[#C9A13A] hover:brightness-105 active:scale-95'
-                  : 'bg-[#1c3a25] border-2 border-[#4a7a4a] hover:bg-[#12281a] active:scale-95'
+                  : 'bg-[#0F6E56] border-[3px] border-[#C9A13A] hover:brightness-105 active:scale-95'
               }`}
               style={{
-                boxShadow: isActive
+                boxShadow: !isStamped
                   ? '0 0 0 6px rgba(201,161,58,0.20)'
                   : undefined,
               }}
@@ -373,12 +360,10 @@ export default function PassportRoad({
                     </span>
                   </div>
                 </div>
-              ) : isActive ? (
+              ) : (
                 <div className="w-[62px] h-[62px] rounded-full bg-[#1a4a30] flex items-center justify-center border border-[#CBA052]/30">
                   <SpecificIcon className="w-7 h-7 text-[#C9A13A]" />
                 </div>
-              ) : (
-                <SpecificIcon className="w-6 h-6 text-[#4a7a4a]" />
               )}
             </button>
 
@@ -398,17 +383,11 @@ export default function PassportRoad({
         const stamp = stamps.find((s) => s.landmark_id === landmark.id);
 
         const isStamped = !!stamp;
-        const isActive = nudgeLandmarkId === landmark.id;
         const isJustStamped = justStampedId === landmark.id;
 
         const isVisible = visibleNodes[landmark.id];
         
-        let stateText = '';
-        if (isActive) {
-          stateText = 'tap to stamp';
-        } else if (isStamped) {
-          stateText = 'stamped';
-        }
+        let stateText = isStamped ? 'stamped' : 'tap to stamp';
 
         const { rotation, offsetX, offsetY } = getDeterministicStampStyle(landmark.id);
 
@@ -423,18 +402,18 @@ export default function PassportRoad({
             }`}
             style={{
               left: `clamp(80px, ${pos.x / 10}%, calc(100% - 80px))`,
-              top: `${pos.y + (isActive ? 48 : 40)}px`,
+              top: `${pos.y + (!isStamped ? 48 : 40)}px`,
               transform: isJustStamped
                 ? undefined
                 : `translateX(-50%) rotate(${rotation * 0.5}deg) translate(${offsetX * 0.4}px, ${offsetY * 0.4}px)`,
               backgroundColor: 'rgba(15, 40, 25, 0.88)',
-              borderColor: isActive ? '#C9A13A' : '#4a7a4a',
+              borderColor: !isStamped ? '#C9A13A' : '#4a7a4a',
               '--rot': `${rotation * 0.5}deg`,
             } as React.CSSProperties}
           >
             {/* Landmark index line */}
             <span className={`text-[9px] font-mono tracking-widest font-extrabold leading-none ${
-              isActive ? 'text-[#C9A13A]' : 'text-[#4a7a4a]'
+              !isStamped ? 'text-[#C9A13A]' : 'text-[#4a7a4a]'
             }`}>
               LANDMARK 0{idx + 1}
             </span>

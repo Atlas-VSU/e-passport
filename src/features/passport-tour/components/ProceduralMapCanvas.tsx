@@ -1,5 +1,5 @@
 import React from 'react';
-import { Landmark } from '../types';
+import { Landmark } from '../../../types';
 
 interface ProceduralMapCanvasProps {
   landmarks: Landmark[];
@@ -69,7 +69,7 @@ export default function ProceduralMapCanvas({ landmarks }: ProceduralMapCanvasPr
   // Draw campus road network connecting adjacent zones sequentially
   const roadPaths: string[] = [];
   const routeNodes = sortedLandmarks.map((lm) => getLandmarkCoords(lm));
-  
+
   for (let i = 0; i < routeNodes.length - 1; i++) {
     const p0 = routeNodes[i];
     const p1 = routeNodes[i + 1];

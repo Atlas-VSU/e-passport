@@ -36,6 +36,8 @@ export interface Landmark {
   zoneRadius?: number;
   mapX?: number;
   mapY?: number;
+  flavorText?: string;
+  funFact?: string;
 }
 
 export enum Page {

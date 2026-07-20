@@ -8,11 +8,13 @@ export const landmarks: Landmark[] = [
     icon: 'account_balance',
     order: 1,
     label: 'Landmark 01',
-    photoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuALRqH_iz6suVkZh_4kLEj12w1HIwtGdR4rqeK7YtIeNn2rAoMY71BOZ_eoHmq44Uza3Avs4n5KVFb6bLQe1JrOez2okt_CAsvPLvPuG4CZCWFyB7mfczG6Ph4ZRvHlIc1fozSjEW6spUs-s03deqn700maBX4jnVMqRI1X7OJWGM0exU3Pt1X6nAIyHBpBkewZFtvYX_8Jo-pVzYStDipyjTZLbol9GYw0bKSZnLlcVBlkkOmDq8NcHQ',
+    photoUrl: '/public/landmarks/vsu-admin.jpg',
     zoneType: 'building',
     zoneRadius: 80,
     mapX: 50,
-    mapY: 8.33
+    mapY: 8.33,
+    flavorText: "The heart of VSU's academic life",
+    funFact: "The administration building stands at the direct center of VSU's radial design layout."
   },
   {
     id: 'ecopark',
@@ -21,11 +23,13 @@ export const landmarks: Landmark[] = [
     icon: 'nature_people',
     order: 2,
     label: 'Landmark 02',
-    photoUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=800',
+    photoUrl: '/public/landmarks/vsu-ecopark.jpg',
     zoneType: 'green',
     zoneRadius: 100,
     mapX: 20,
-    mapY: 25.0
+    mapY: 25.0,
+    flavorText: 'A lush sanctuary for nature and conservation',
+    funFact: "It contains rare, native orchid collections and a century-old tropical canopy walk."
   },
   {
     id: 'library',
@@ -34,11 +38,13 @@ export const landmarks: Landmark[] = [
     icon: 'local_library',
     order: 3,
     label: 'Landmark 03',
-    photoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuClKg0vwjkMUDFvxZM7PIX0vwEF__E1Trin9sE6A3gDNOiEqzEWMJfVnZXbPL0GVHtY8DxHM9U1kjJ1w7w12fergJgIE1VR2-I1e0F8kNbJWbXJ4PkWzncJn6_70zNO8nDbMsjmFd1-wXIG6lz8u8a8VsUi07YA_RhsR46wKYs0URRH14OOp8bfoh1WRT3LMGfXuRtKo8_Ix0OQV5QTIGnKFQKXNbmkOD5jWX5BjF0Nsa2AWLmyY5TLBA',
+    photoUrl: '/public/landmarks/vsu-library.jpg',
     zoneType: 'building',
     zoneRadius: 75,
     mapX: 68,
-    mapY: 41.67
+    mapY: 41.67,
+    flavorText: 'A quiet harbor for wisdom and knowledge.',
+    funFact: "The VSU Library holds over 80,000 volumes and is the largest academic library in Eastern Visayas."
   },
   {
     id: 'obelisk',
@@ -47,11 +53,13 @@ export const landmarks: Landmark[] = [
     icon: 'verified',
     order: 4,
     label: 'Landmark 04',
-    photoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBUUE176PUkK38p_48LmLrBFIVlYaZFy-sp27X9ukLm5bVgD7SGEVpP-EFuleNwEJixskXB4nweieleyst_Qty92cqeJ1z9gE3pGGS2l7Q_9oPvYJd5tXDuln9jso5rwVul1_YMhknzvvygsJQd9BuY0EnqRfi4jGB8xy3Uyslzd4lZAzlZhcBjvJRmFEDcceTXPmZfFZBJJurdXZCQ8TAP6z9SOfMzfbji__Wn1gKG9XEL935z_d-ucA',
+    photoUrl: '/public/landmarks/vsu-obelisk.jpg',
     zoneType: 'open',
     zoneRadius: 70,
     mapX: 30,
-    mapY: 58.33
+    mapY: 58.33,
+    flavorText: 'A historic beacon of agricultural excellence',
+    funFact: "The obelisk is a 12-meter tall concrete spire representing VSU's pillars of excellence."
   },
   {
     id: 'oval',
@@ -60,11 +68,13 @@ export const landmarks: Landmark[] = [
     icon: 'stadium',
     order: 5,
     label: 'Landmark 05',
-    photoUrl: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?auto=format&fit=crop&q=80&w=800',
+    photoUrl: '/public/landmarks/vsu-oval.jpg',
     zoneType: 'sports',
     zoneRadius: 90,
     mapX: 65,
-    mapY: 75.0
+    mapY: 75.0,
+    flavorText: 'The energetic hub of sports and student spirit',
+    funFact: "It features an all-weather rubberized athletic track host to regional matches."
   },
   {
     id: 'beach',
@@ -73,10 +83,12 @@ export const landmarks: Landmark[] = [
     icon: 'beach_access',
     order: 6,
     label: 'Landmark 06',
-    photoUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800',
+    photoUrl: '/public/landmarks/vsu-beach.jpg',
     zoneType: 'water',
     zoneRadius: 95,
     mapX: 48,
-    mapY: 91.67
+    mapY: 91.67,
+    flavorText: 'Camotes Sea breezes meeting tropical sunsets',
+    funFact: "The beachfront is the perfect venue for witnessing Camotes Sea's golden-hour sunsets."
   }
 ];

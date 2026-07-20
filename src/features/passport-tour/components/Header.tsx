@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { LogOut } from "lucide-react";
 import { Profile } from "../../../types";
 import ProgressTracker from "../../../components/ProgressTracker";
+import { motion, AnimatePresence } from "motion/react";
 
 interface HeaderProps {
   currentUser: Profile | null;
@@ -15,7 +16,7 @@ interface HeaderProps {
   totalCount: number;
   showLogoutConfirm: boolean;
   setShowLogoutConfirm: (show: boolean) => void;
-  handleLogOut: () => void;
+  handleLogOut: () => void | Promise<void>;
 }
 
 export default function Header({
@@ -26,6 +27,19 @@ export default function Header({
   setShowLogoutConfirm,
   handleLogOut,
 }: HeaderProps) {
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const onConfirmSignOut = async () => {
+    setIsLoggingOut(true);
+    try {
+      await handleLogOut();
+    } catch (err) {
+      console.error("Sign out failed:", err);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   return (
     <header
       className="pt-[max(1.25rem,env(safe-area-inset-top))] px-4 pb-4 text-white rounded-b-[40px] shadow-xl relative z-30 overflow-hidden flex flex-col gap-4 passport-leather-overlay shrink-0"
@@ -89,40 +103,66 @@ export default function Header({
             <LogOut className="w-4 h-4" />
           </button>
 
-          {showLogoutConfirm &&
-            typeof document !== "undefined" &&
+          {typeof document !== "undefined" &&
             createPortal(
-              <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
-                <div className="bg-white rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl border border-gray-100 transform scale-100 transition-all relative z-[10000]">
-                  <div className="w-12 h-12 rounded-full bg-red-50 text-red-600 flex items-center justify-center mx-auto mb-4">
-                    <LogOut className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-gray-900 font-sans text-lg font-black mb-2">
-                    Sign Out?
-                  </h3>
-                  <p className="text-gray-500 font-sans text-sm mb-6 leading-relaxed">
-                    Are you sure you want to exit the E-Passport? You can log
-                    back in anytime to continue your journey.
-                  </p>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setShowLogoutConfirm(false)}
-                      className="flex-1 py-3 px-4 rounded-xl border border-gray-200 text-gray-700 font-sans font-bold text-sm hover:bg-gray-50 active:scale-98 transition-all"
+              <AnimatePresence>
+                {showLogoutConfirm && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+                  >
+                    <motion.div
+                      initial={{ scale: 0.9, y: 10, opacity: 0 }}
+                      animate={{ scale: 1, y: 0, opacity: 1 }}
+                      exit={{ scale: 0.9, y: 10, opacity: 0 }}
+                      transition={{ type: "spring", damping: 25, stiffness: 350 }}
+                      className="bg-[#002b18] rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl border-2 border-[#CBA052]/40 relative z-[10000] passport-leather-overlay overflow-hidden"
                     >
-                      Stay
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowLogoutConfirm(false);
-                        handleLogOut();
-                      }}
-                      className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-sans font-bold text-sm active:scale-98 transition-all shadow-sm"
-                    >
-                      Sign Out
-                    </button>
-                  </div>
-                </div>
-              </div>,
+                      {/* Subtle gold radial glow inside */}
+                      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(202,160,82,0.12),transparent_60%)] pointer-events-none" />
+
+                      <div className="relative z-10 flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-full bg-[#CBA052]/10 border border-[#CBA052]/35 text-[#CBA052] flex items-center justify-center mb-4">
+                          <LogOut className="w-5 h-5" />
+                        </div>
+                        <h3 className="text-[#CBA052] font-serif text-xl font-black mb-2">
+                          Sign Out?
+                        </h3>
+                        <p className="text-[#F2E9D3]/85 font-sans text-xs mb-6 leading-relaxed">
+                          Are you sure you want to exit the E-Passport? You can log
+                          back in anytime to continue your journey.
+                        </p>
+                        <div className="flex gap-3 w-full">
+                          <button
+                            onClick={() => setShowLogoutConfirm(false)}
+                            disabled={isLoggingOut}
+                            className="flex-1 py-3 px-4 rounded-xl border border-white/20 text-[#F2E9D3] font-sans font-bold text-sm hover:bg-white/5 active:scale-98 transition-all cursor-pointer disabled:opacity-30"
+                          >
+                            Stay
+                          </button>
+                          <button
+                            onClick={onConfirmSignOut}
+                            disabled={isLoggingOut}
+                            className="flex-1 py-3 px-4 rounded-xl bg-[#CBA052] hover:bg-[#b0873e] text-[#001a0e] font-sans font-black text-sm active:scale-98 transition-all shadow-md cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+                          >
+                            {isLoggingOut ? (
+                              <>
+                                <span className="w-3 h-3 border-2 border-[#001a0e] border-t-transparent rounded-full animate-spin"></span>
+                                <span>Exiting...</span>
+                              </>
+                            ) : (
+                              <span>Sign Out</span>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>,
               document.body,
             )}
         </div>

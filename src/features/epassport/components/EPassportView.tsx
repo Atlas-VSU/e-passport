@@ -104,13 +104,13 @@ export default function EPassportView({ landmarks, stamps, currentUser, onBack }
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: 'My VSU E-Passport',
-          text: '✅ I completed the VSU Campus Tour! 🎓 #VSU #CampusTour',
+          title: 'My Viscan E-Pasaporte',
+          text: 'I completed the VSU Campus Tour! #VSU #CampusTour',
         });
       } else if (navigator.share) {
         await navigator.share({
-          title: 'My VSU E-Passport',
-          text: '✅ I completed the VSU Campus Tour! 🎓 #VSU #CampusTour',
+          title: 'My Viscan E-Pasaporte',
+          text: 'I completed the VSU Campus Tour! #VSU #CampusTour',
           url: window.location.href,
         });
       } else {
@@ -156,7 +156,7 @@ export default function EPassportView({ landmarks, stamps, currentUser, onBack }
           Map
         </button>
         <span className="font-mono text-[9px] uppercase tracking-widest" style={{ color: C.goldAlpha70 }}>
-          VSU E-Passport
+          Viscan E-Pasaporte
         </span>
         <div style={{ width: 80 }} />
       </header>
@@ -207,7 +207,7 @@ export default function EPassportView({ landmarks, stamps, currentUser, onBack }
             ref={passportRef}
             id="passport-card"
             style={{
-              background: C.green,
+              background: `linear-gradient(145deg, #003020 0%, #001a10 40%, #0a2015 60%, #001508 100%)`,
               fontFamily: 'Georgia, serif',
               borderRadius: '28px',
               overflow: 'hidden',
@@ -216,16 +216,6 @@ export default function EPassportView({ landmarks, stamps, currentUser, onBack }
               border: `3px solid ${C.goldAlpha40}`,
             }}
           >
-            {/* Leather texture overlay */}
-            <div
-              style={{
-                position: 'absolute', inset: 0, pointerEvents: 'none',
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='leather-grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='4' result='noise1' stitchTiles='stitch'/%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.45' numOctaves='3' result='noise2' stitchTiles='stitch'/%3E%3CfeBlend mode='overlay' in='noise1' in2='noise2' result='combined'/%3E%3CfeDiffuseLighting in='combined' lighting-color='%23ffffff' surfaceScale='3.2' result='light'%3E%3CfeDistantLight azimuth='60' elevation='45'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='256' height='256' fill='%237f7f7f' filter='url(%23leather-grain)'/%3E%3C/svg%3E")`,
-                opacity: 0.45,
-                mixBlendMode: 'overlay',
-              }}
-            />
-
             {/* Security dot pattern */}
             <div
               style={{
@@ -245,7 +235,7 @@ export default function EPassportView({ landmarks, stamps, currentUser, onBack }
                   width: 48, height: 48, flexShrink: 0,
                 }}>
                   <img
-                    src={"/vsu-brand-logo-gold-2.png"}
+                    src={"/vsu-brand-logo.png"}
                     alt="VSU Logo"
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />
@@ -254,7 +244,7 @@ export default function EPassportView({ landmarks, stamps, currentUser, onBack }
                   width: 48, height: 48, flexShrink: 0,
                 }}>
                   <img
-                    src={"/ussc-logo-gold-2.png"}
+                    src={"/ussc-logo.png"}
                     alt="USSC Logo"
                     style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                   />

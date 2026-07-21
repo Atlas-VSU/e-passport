@@ -148,20 +148,14 @@ export default function EPassportView({ landmarks, stamps, currentUser, onBack }
 
           {/* Main scroll content with padding and flex centering */}
           <div className="px-4 py-6 flex flex-col items-center gap-6">
-            {/* Title badge */}
+            {/* Title header */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               style={{ textAlign: 'center' }}
             >
-              <div
-                className="inline-flex items-center gap-1.5 font-mono font-black uppercase mb-2 bg-[rgba(203,160,82,0.25)] border border-[rgba(139,80,20,0.40)] text-[#7a4f10] text-[9px] tracking-widest px-3 py-1.5 rounded-full"
-              >
-                <Sparkles className="w-3 h-3 fill-[#7a4f10]" />
-                Campus Tour Complete
-              </div>
-              <h1 className="font-serif text-xl font-black text-[#1a0e04] m-0 text-center">
+              <h1 className="font-serif text-xl font-black text-[#1a0e04] m-0 text-center whitespace-nowrap">
                 Your Viscan E-Pasaporte
               </h1>
               <p className="font-mono text-[10px] text-[#5a3a18]/60 mt-1 text-center">

@@ -68,10 +68,10 @@ export const EPassportCard = forwardRef<HTMLDivElement, EPassportCardProps>((
 
           {/* Institution & Title Block (Left Aligned) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontFamily: 'monospace', fontSize: '8px', color: '#c9a13a', letterSpacing: '2.5px', opacity: 0.8, textTransform: 'uppercase', lineHeight: 1.2 }}>
+            <span style={{ fontFamily: 'monospace', fontSize: '8px', color: '#c9a13a', letterSpacing: '2.5px', opacity: 0.8, textTransform: 'uppercase', lineHeight: 1.2, whiteSpace: 'nowrap' }}>
               Visayas State University
             </span>
-            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '24px', fontWeight: 900, color: '#e8d4a0', letterSpacing: '8px', margin: '4px 0 0', textTransform: 'uppercase', lineHeight: 1 }}>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '20px', fontWeight: 900, color: '#e8d4a0', letterSpacing: '4px', margin: '4px 0 0', textTransform: 'uppercase', lineHeight: 1, whiteSpace: 'nowrap' }}>
               E-PASAPORTE
             </h2>
           </div>
@@ -114,7 +114,7 @@ export const EPassportCard = forwardRef<HTMLDivElement, EPassportCardProps>((
         </svg>
 
         {/* Holder Fields Row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px dashed rgba(100,70,20,0.25)', padding: '12px 24px', position: 'relative', zIndex: 2 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px dashed rgba(100,70,20,0.25)', padding: '12px 24px', position: 'relative', zIndex: 2 }}>
           <div>
             <span style={{ fontFamily: 'monospace', fontSize: '8px', color: 'rgba(80,50,10,0.60)', textTransform: 'uppercase', letterSpacing: '1.5px', display: 'block', marginBottom: 3 }}>
               NAME
@@ -122,11 +122,6 @@ export const EPassportCard = forwardRef<HTMLDivElement, EPassportCardProps>((
             <span style={{ fontFamily: 'monospace', fontSize: '15px', fontWeight: 900, color: '#1a0e04', letterSpacing: '0.5px', display: 'block' }}>
               {currentUser?.last_name?.toUpperCase() || 'STUDENT'}, {currentUser?.first_name?.toUpperCase() || ''}
             </span>
-            {currentUser?.student_id && (
-              <span style={{ fontFamily: 'monospace', fontSize: '9px', fontWeight: 700, color: 'rgba(80,50,10,0.65)', letterSpacing: '1px', display: 'block', marginTop: 2 }}>
-                ID: {currentUser.student_id}
-              </span>
-            )}
           </div>
           <div style={{ textAlign: 'right' }}>
             <span style={{ fontFamily: 'monospace', fontSize: '8px', color: 'rgba(80,50,10,0.60)', textTransform: 'uppercase', letterSpacing: '1.5px', display: 'block', marginBottom: 3 }}>

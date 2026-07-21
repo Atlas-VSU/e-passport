@@ -6,8 +6,8 @@
 import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import { LogOut } from "lucide-react";
-import { Profile } from "../../../types";
-import ProgressTracker from "../../../components/ProgressTracker";
+import { Profile } from "../types";
+import ProgressTracker from "./ProgressTracker";
 import { motion, AnimatePresence } from "motion/react";
 
 interface HeaderProps {
@@ -132,7 +132,7 @@ export default function Header({
                           Sign Out?
                         </h3>
                         <p className="text-[#F2E9D3]/85 font-sans text-xs mb-6 leading-relaxed">
-                          Are you sure you want to exit the E-Passport? You can log
+                          Are you sure you want to exit the Viscan E-Pasaporte ? You can log
                           back in anytime to continue your journey.
                         </p>
                         <div className="flex gap-3 w-full">

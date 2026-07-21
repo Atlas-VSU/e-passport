@@ -32,36 +32,30 @@ export default function Footer({
           isComplete ? (
             <button
               onClick={onViewPassport}
-              className="w-auto py-2.5 px-6 bg-[#CBA052] hover:bg-[#b0873e] active:scale-95 text-[#004225] font-mono text-xs font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(203,160,82,0.25)] hover:shadow-[0_6px_16px_rgba(203,160,82,0.35)] cursor-pointer"
-
+              className="w-auto py-2.5 px-6 bg-gradient-to-r from-[#FFE58F] to-[#D4AF37] hover:brightness-105 active:scale-95 text-[#1c1103] font-mono text-xs font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all shadow-[0_4px_16px_rgba(212,175,55,0.25)] cursor-pointer"
             >
-              <BookOpen className="w-4 h-4 text-[#004225]" />
+              <BookOpen className="w-4 h-4 text-[#1c1103]" />
               <span>Download E-Passport</span>
             </button>
           ) : (
             <button
               onClick={() => setSubView(isMap ? "stickers" : "map")}
-              className="w-auto py-2.5 px-6 bg-[#CBA052] hover:bg-[#b0873e] active:scale-95 text-[#004225] font-mono text-xs font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all shadow-[0_4px_12px_rgba(203,160,82,0.25)] hover:shadow-[0_6px_16px_rgba(203,160,82,0.35)] cursor-pointer"
+              className="w-auto py-2.5 px-6 bg-gradient-to-r from-[#FFE58F] to-[#D4AF37] hover:brightness-105 active:scale-95 text-[#1c1103] font-mono text-xs font-bold uppercase tracking-widest rounded-full flex items-center justify-center gap-2 transition-all shadow-[0_4px_16px_rgba(212,175,55,0.25)] cursor-pointer"
             >
               {isMap ? (
                 <>
-                  <BookOpen className="w-4 h-4 text-[#004225]" />
+                  <BookOpen className="w-4 h-4 text-[#1c1103]" />
                   <span>View my stamp book</span>
                 </>
               ) : (
                 <>
-                  <Map className="w-4 h-4 text-[#004225]" />
+                  <Map className="w-4 h-4 text-[#1c1103]" />
                   <span>View tour map</span>
                 </>
               )}
             </button>
-
           )
         }
-
-
-
-
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Stamp } from '../../../types';
+import ImageWithLoader from '../../../components/ImageWithLoader';
 
 interface UserPhotoEntryProps {
   stamp: Stamp;
@@ -20,10 +21,11 @@ export default function UserPhotoEntry({ stamp }: UserPhotoEntryProps) {
         }}
       >
         <div className="aspect-[4/3] rounded-lg overflow-hidden relative">
-          <img
+          <ImageWithLoader
             src={stamp.photo_url}
             alt="Your entry photo"
             className="w-full h-full object-cover"
+            showSpinner
           />
           <div className="absolute bottom-2.5 right-2.5 bg-[#0F6E56] text-[#FFE58F] border border-[#FFE58F]/30 rounded-full px-2.5 py-0.5 text-[8.5px] font-mono font-bold tracking-widest shadow-sm">
             CHECKED IN ✓

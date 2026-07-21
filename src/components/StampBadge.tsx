@@ -1,6 +1,7 @@
 import React from 'react';
 import { Lock, Navigation } from 'lucide-react';
 import { Landmark, Stamp } from '../types';
+import ImageWithLoader from './ImageWithLoader';
 
 interface StampBadgeProps {
   landmark: Landmark;
@@ -34,7 +35,7 @@ export default function StampBadge({ landmark, stamp, isActive, isLocked, onClic
         className="flex items-center gap-3 bg-[#CBA052]/10 hover:bg-[#CBA052]/20 p-2 pr-4 rounded-full border-2 border-[#CBA052]/40 max-w-[250px] transition-all duration-200 group focus:outline-none focus:ring-2 focus:ring-[#004225] text-left shadow-[0_4px_12px_rgba(0,0,0,0.2)]"
       >
         <div className="relative w-12 h-12 rounded-full border-2 border-white shadow-md flex-shrink-0 overflow-hidden transform rotate-3 group-hover:rotate-12 transition-transform duration-300">
-          <img 
+          <ImageWithLoader 
             className="w-full h-full object-cover" 
             src={stamp.photo_url || landmark.photoUrl} 
             alt={landmark.name} 

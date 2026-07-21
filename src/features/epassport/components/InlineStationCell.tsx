@@ -1,5 +1,6 @@
 import React from 'react';
 import { Landmark, Stamp } from '../../../types';
+import ImageWithLoader from '../../../components/ImageWithLoader';
 
 interface InlineStationCellProps {
   landmark: Landmark;
@@ -71,7 +72,7 @@ export default function InlineStationCell({ landmark, stamp, rotation, index }: 
       {/* Photo or placeholder */}
       {hasStamp && stamp?.photo_url ? (
         <>
-          <img
+          <ImageWithLoader
             src={stamp.photo_url}
             alt={landmark.name}
             crossOrigin="anonymous"

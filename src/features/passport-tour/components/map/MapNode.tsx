@@ -1,6 +1,7 @@
 import React from 'react';
 import { Check, Building, Leaf, BookOpen, Award, Trophy, Palmtree, LucideIcon } from 'lucide-react';
 import { Landmark, Stamp } from '../../../../types';
+import ImageWithLoader from '../../../../components/ImageWithLoader';
 
 interface MapNodeProps {
   landmark: Landmark;
@@ -69,7 +70,7 @@ export default function MapNode({
       >
         {isStamped ? (
           <div className="relative w-full h-full rounded-full overflow-hidden">
-            <img
+            <ImageWithLoader
               src={stamp?.photo_url || landmark.photoUrl}
               alt={landmark.name}
               className="w-full h-full object-cover grayscale-[25%] contrast-[105%] brightness-[90%]"

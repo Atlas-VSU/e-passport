@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { landmarks } from "./lib/landmarks";
 import { Page } from "./types";
 import ConsentModal from "./features/auth/components/ConsentModal";
@@ -36,6 +36,29 @@ export default function App() {
     handlePhotoConfirmed,
     handleLogOut,
   } = useEPassport();
+
+  useEffect(() => {
+    // Preload landmark photos
+    landmarks.forEach((landmark) => {
+      if (landmark.photoUrl) {
+        const img = new Image();
+        img.src = landmark.photoUrl;
+      }
+    });
+
+    // Preload large map and background texture assets
+    const staticAssets = [
+      "/textures/leather.png",
+      "/vsu-brand-logo-gold-2.png",
+      "/ussc-logo-gold-2.png",
+      "/head-marker.png",
+      "/landmarks/"
+    ];
+    staticAssets.forEach((url) => {
+      const img = new Image();
+      img.src = url;
+    });
+  }, []);
 
   const renderCurrentView = () => {
     switch (currentPage) {

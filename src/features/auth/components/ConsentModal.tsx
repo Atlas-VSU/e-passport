@@ -15,7 +15,7 @@ export default function ConsentModal({ onAccept, isSubmitting }: ConsentModalPro
       <div className="absolute inset-0 bg-radial-gradient(circle_at_2px_2px,rgba(0,66,37,0.02)_1px,transparent_0) [background-size:16px_16px] pointer-events-none z-0" />
 
       {/* Header */}
-      <div className="bg-[#004225] p-5 pb-6 border-b-4 border-[#CBA052] relative overflow-hidden flex flex-col items-center text-white z-10 flex-shrink-0">
+      <div className="bg-[#004225] p-5 pb-6 border-b-4 border-[#CBA052] relative overflow-hidden flex flex-col items-center text-white z-10 flex-shrink-0 passport-leather-overlay">
         <div className="flex items-center justify-center mb-2 bg-white rounded-full p-3 shadow-md">
           <ShieldCheck className="w-8 h-8 text-[#004225]" />
         </div>
@@ -28,7 +28,7 @@ export default function ConsentModal({ onAccept, isSubmitting }: ConsentModalPro
       {/* Content Scrollable */}
       <div className="p-5 flex-1 overflow-y-auto flex flex-col gap-4 bg-transparent z-10">
         <p className="font-sans text-xs text-[#1A1A1A] leading-relaxed">
-          Welcome to the USSC E-Passport campus tour! To provide you with an interactive and verified stamp experience, we request permission for the following actions:
+          Welcome to the Viscan E-Pasaporte campus tour! To provide you with an interactive and verified stamp experience, we request permission for the following actions:
         </p>
 
         <ul className="flex flex-col gap-3">
@@ -69,8 +69,8 @@ export default function ConsentModal({ onAccept, isSubmitting }: ConsentModalPro
       <div className="p-5 bg-white border-t border-gray-100 flex flex-col gap-4 z-10 flex-shrink-0">
         <label className="flex items-start gap-2.5 cursor-pointer group select-none">
           <div className="pt-0.5 flex-shrink-0">
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
               className="w-4 h-4 text-[#004225] border-2 border-gray-300 rounded focus:ring-[#004225]"
@@ -82,7 +82,7 @@ export default function ConsentModal({ onAccept, isSubmitting }: ConsentModalPro
         </label>
 
         <div className="flex flex-col gap-2 items-center">
-          <button 
+          <button
             type="button"
             disabled={!agreed || isSubmitting}
             onClick={onAccept}

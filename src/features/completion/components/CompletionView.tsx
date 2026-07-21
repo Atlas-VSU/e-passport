@@ -1,7 +1,7 @@
 import React from 'react';
 import { Award, Download, Share2, Sparkles, BookOpen, RotateCcw, Map } from 'lucide-react';
 import { motion } from 'motion/react';
-import { Landmark, Stamp } from '../types';
+import { Landmark, Stamp } from '../../../types';
 
 interface CompletionViewProps {
   landmarks: Landmark[];
@@ -24,7 +24,7 @@ export default function CompletionView({
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: 'My USSC E-Passport Campus Tour',
+        title: 'My Viscan E-Pasaporte Campus Tour',
         text: `I completed my academic campus tour of Visayas State University! Stamped ${stamps.length} of ${landmarks.length} landmarks!`,
         url: window.location.href,
       }).catch(err => console.log(err));
@@ -49,8 +49,11 @@ export default function CompletionView({
           <Map className="w-3.5 h-3.5" />
           Map
         </button>
-        <h1 className="font-serif text-sm font-black italic tracking-wide text-white">
-          USSC E-PASSPORT
+        <h1 className="font-serif text-sm font-black italic tracking-wide text-white whitespace-nowrap">
+          VISCAN
+        </h1>
+        <h1 className="font-serif text-sm font-black italic tracking-wide text-white whitespace-nowrap">
+          E-PASAPORTE
         </h1>
       </header>
 

@@ -84,35 +84,35 @@ export default function ProgressTracker({
 
       <div className="h-px bg-[#CBA052]/25 mb-0.5" />
 
-      <div className="relative h-13">
+      <div className="relative h-18">
         <div
           className="absolute top-0 -translate-x-1/2 transition-all duration-700 ease-out flex flex-col items-center"
-          style={{ left: `clamp(22px, ${percent}%, calc(100% - 22px))` }}
+          style={{ left: `clamp(36px, ${percent}%, calc(100% - 36px))` }}
         >
           {/* outer: persistent idle sway, always running */}
           <div className="head-marker-idle">
             {/* inner: remounts on stampsCount change, replays the bigger wobble once */}
             <div
               key={stampsCount}
-              className="head-marker-wobble w-13 h-13 flex items-center justify-center overflow-hidden"
+              className="head-marker-wobble w-18 h-18 flex items-center justify-center"
             >
               {HEAD_IMAGE_URL ? (
                 <img
                   src={HEAD_IMAGE_URL}
                   alt="Current progress"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain filter drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)]"
                 />
               ) : (
-                <ImageIcon className="w-4 h-4 text-[#CBA052]/60" />
+                <ImageIcon className="w-6 h-6 text-[#CBA052]/60" />
               )}
             </div>
           </div>
           <div
             className="w-0 h-0"
             style={{
-              borderLeft: "5px solid transparent",
-              borderRight: "5px solid transparent",
-              borderTop: `6px solid ${GOLD}`,
+              borderLeft: "6px solid transparent",
+              borderRight: "6px solid transparent",
+              borderTop: `7px solid ${GOLD}`,
               filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.35))",
             }}
           />

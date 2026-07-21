@@ -2,40 +2,64 @@ import { Landmark } from '../types';
 
 export const landmarks: Landmark[] = [
   {
-    id: 'obelisk',
-    name: 'VSU Obelisk',
-    description: 'Standing as a proud symbol of the university, the Obelisk marks the entrance to the lower campus. It represents the enduring pursuit of agricultural and environmental excellence.',
-    icon: 'verified',
-    order: 1,
-    label: 'Landmark 01',
-    photoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBUUE176PUkK38p_48LmLrBFIVlYaZFy-sp27X9ukLm5bVgD7SGEVpP-EFuleNwEJixskXB4nweieleyst_Qty92cqeJ1z9gE3pGGS2l7Q_9oPvYJd5tXDuln9jso5rwVul1_YMhknzvvygsJQd9BuY0EnqRfi4jGB8xy3Uyslzd4lZAzlZhcBjvJRmFEDcceTXPmZfFZBJJurdXZCQ8TAP6z9SOfMzfbji__Wn1gKG9XEL935z_d-ucA'
-  },
-  {
     id: 'admin',
     name: 'Admin Bldg',
-    description: 'A grand, classical university administration building with large white columns and a wide staircase. The building is bathed in warm afternoon sunlight, projecting institutional prestige.',
+    description: 'The VSU Administration Building serves as the iconic command center of the university\'s main campus, perched prominently on a hill overlooking the campus landscape and the Camotes Sea.',
     icon: 'account_balance',
-    order: 2,
-    label: 'Landmark 02',
-    photoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuALRqH_iz6suVkZh_4kLEj12w1HIwtGdR4rqeK7YtIeNn2rAoMY71BOZ_eoHmq44Uza3Avs4n5KVFb6bLQe1JrOez2okt_CAsvPLvPuG4CZCWFyB7mfczG6Ph4ZRvHlIc1fozSjEW6spUs-s03deqn700maBX4jnVMqRI1X7OJWGM0exU3Pt1X6nAIyHBpBkewZFtvYX_8Jo-pVzYStDipyjTZLbol9GYw0bKSZnLlcVBlkkOmDq8NcHQ'
-  },
-  {
-    id: 'library',
-    name: 'University Library',
-    description: 'A modern, multi-story university library building featuring large glass windows reflecting the surrounding nature. It serves as a center for quiet academic study and active learning.',
-    icon: 'local_library',
-    order: 3,
-    label: 'Landmark 03',
-    photoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuClKg0vwjkMUDFvxZM7PIX0vwEF__E1Trin9sE6A3gDNOiEqzEWMJfVnZXbPL0GVHtY8DxHM9U1kjJ1w7w12fergJgIE1VR2-I1e0F8kNbJWbXJ4PkWzncJn6_70zNO8nDbMsjmFd1-wXIG6lz8u8a8VsUi07YA_RhsR46wKYs0URRH14OOp8bfoh1WRT3LMGfXuRtKo8_Ix0OQV5QTIGnKFQKXNbmkOD5jWX5BjF0Nsa2AWLmyY5TLBA'
+    order: 1,
+    label: 'Landmark 01',
+    photoUrl: '/landmarks/vsu-admin.jpg',
+    zoneType: 'building',
+    zoneRadius: 80,
+    mapX: 50,
+    mapY: 8.33,
+    flavorText: "The heart of VSU's academic life",
+    funFact: " Standing directly in front of the steps is the iconic Search for Truth Statue. It features two gigantic nude figures of a man and a woman representing partnership, where their absolute nakedness symbolizes the bold, impartial, and unencumbered drive for knowledge."
   },
   {
     id: 'ecopark',
     name: 'VSU Eco Park',
-    description: 'A lush green sanctuary showing off rich tropical biodiversity, winding forest trails, and educational conservation spaces. Perfect for deep reflections on ecology and sustainable development.',
+    description: 'The VSU Eco Park (often paired with the adjacent VSU Mall) is the vibrant, green heart of the upper campus. It perfectly bridges the university’s reputation as the "Very Scenic University" with its active student life.',
     icon: 'nature_people',
+    order: 2,
+    label: 'Landmark 02',
+    photoUrl: '/landmarks/vsu-ecopark.jpg',
+    zoneType: 'green',
+    zoneRadius: 100,
+    mapX: 20,
+    mapY: 25.0,
+    flavorText: 'A lush sanctuary for nature and conservation',
+    funFact: " Rather than just a recreational park, professors actively use the space as a living laboratory. Here, biology and environmental science students conduct field research, assess biodiversity, and study organisms in their native habitats."
+  },
+  {
+    id: 'library',
+    name: 'VSU Library',
+    description: 'A modern, multi-story university library building featuring large glass windows reflecting the surrounding nature. It serves as a center for quiet academic study and active learning.',
+    icon: 'local_library',
+    order: 3,
+    label: 'Landmark 03',
+    photoUrl: '/landmarks/vsu-library.jpg',
+    zoneType: 'building',
+    zoneRadius: 75,
+    mapX: 68,
+    mapY: 41.67,
+    flavorText: 'A quiet harbor for wisdom and knowledge.',
+    funFact: "The VSU Library holds over 80,000 volumes and is the largest academic library in Eastern Visayas."
+  },
+  {
+    id: 'obelisk',
+    name: 'VSU Obelisk',
+    description: 'Standing as a proud symbol of the university, the Obelisk marks the entrance to the main campus. It represents the enduring pursuit of agricultural and environmental excellence.',
+    icon: 'verified',
     order: 4,
     label: 'Landmark 04',
-    photoUrl: 'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&q=80&w=800'
+    photoUrl: '/landmarks/vsu-obelisk.jpg',
+    zoneType: 'open',
+    zoneRadius: 70,
+    mapX: 30,
+    mapY: 58.33,
+    flavorText: 'A historic beacon of agricultural excellence',
+    funFact: "The twin obelisks frame the main entrance, with the southern pillar featuring the \"god of the sun\" to represent VSU's agricultural and life sciences roots, and the northern pillar bearing the \"god of lightning and thunder\" to symbolize modern technology and innovation."
   },
   {
     id: 'oval',
@@ -44,7 +68,13 @@ export const landmarks: Landmark[] = [
     icon: 'stadium',
     order: 5,
     label: 'Landmark 05',
-    photoUrl: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?auto=format&fit=crop&q=80&w=800'
+    photoUrl: '/landmarks/vsu-oval.jpg',
+    zoneType: 'sports',
+    zoneRadius: 90,
+    mapX: 65,
+    mapY: 75.0,
+    flavorText: 'The energetic hub of sports and student spirit',
+    funFact: " The field made headlines during the 37th State Colleges and Universities Athletic Association (SCUAA-8) Games when the Upper Oval was illuminated during the opening ceremony using thousands of upcycled plastic bottles."
   },
   {
     id: 'beach',
@@ -53,6 +83,12 @@ export const landmarks: Landmark[] = [
     icon: 'beach_access',
     order: 6,
     label: 'Landmark 06',
-    photoUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&q=80&w=800'
+    photoUrl: '/landmarks/vsu-beach.jpg',
+    zoneType: 'water',
+    zoneRadius: 95,
+    mapX: 48,
+    mapY: 91.67,
+    flavorText: 'Camotes Sea breezes meeting tropical sunsets',
+    funFact: "The waters directly fronting the university beach are a strictly protected fish sanctuary, allowing local marine life to thrive harmoniously alongside the campus."
   }
 ];

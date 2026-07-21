@@ -32,4 +32,22 @@ export interface Landmark {
   order: number;
   label?: string; // e.g. "Landmark 01"
   photoUrl?: string; // default showcase photo
+  zoneType?: 'green' | 'water' | 'building' | 'sports' | 'open';
+  zoneRadius?: number;
+  mapX?: number;
+  mapY?: number;
+  flavorText?: string;
+  funFact?: string;
 }
+
+export enum Page {
+  LOADING,
+  LOGIN,
+  CONSENT,
+  PASSPORT,
+  LANDMARK_DETAIL,
+  STAMP_CONFIRMATION,
+  COMPLETION,
+  E_PASSPORT
+}
+

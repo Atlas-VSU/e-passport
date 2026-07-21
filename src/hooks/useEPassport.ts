@@ -210,6 +210,11 @@ export function useEPassport() {
     setStamps([]);
     setSelectedLandmark(null);
     setAuthError(null);
+    setSubView("map");
+    setJustStampedId(null);
+    setMilestonesFired({ m3: false, m6: false });
+    setActiveCelebration(null);
+    setShowLogoutConfirm(false);
     setCurrentPage(Page.LOGIN);
   };
 

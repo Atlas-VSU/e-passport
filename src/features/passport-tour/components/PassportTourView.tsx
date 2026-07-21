@@ -4,11 +4,11 @@
  */
 
 import React from "react";
-import Header from "./Header";
-import Footer from "./Footer";
-import PassportRoad from "./PassportRoad";
-import StickerBookView from "./StickerBookView";
-import MilestoneCelebration from "./MilestoneCelebration";
+import Header from "../../../components/Header";
+import Footer from "../../../components/Footer";
+import PassportRoad from "./map/PassportRoad";
+import StickerBookView from "./sticker-view/StickerBookView";
+import MilestoneCelebration from "../../../components/MilestoneCelebration";
 import { Landmark, Stamp, Profile, Page } from "../../../types";
 
 interface PassportTourViewProps {

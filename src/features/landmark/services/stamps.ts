@@ -51,6 +51,12 @@ export async function uploadStampPhoto(
     }
     const blob = new Blob([bytes], { type: "image/jpeg" });
 
+    const MAX_SIZE_MB = 8;
+
+    if (blob.size > MAX_SIZE_MB * 1024 * 1024) {
+      throw new Error(`Photo is too large. Please keep it under ${MAX_SIZE_MB}MB.`);
+    }
+
     const storagePath = `e-passport/${userId}/${landmarkId}.jpg`;
     let photoUrl = "";
 

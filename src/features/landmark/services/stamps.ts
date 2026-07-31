@@ -6,6 +6,8 @@
 import { getSupabase } from "../../../lib/supabase/client";
 import { Stamp } from "../../../types";
 import { safeJson } from "../../../services/api";
+import { getFirebaseStorage } from "@/src/lib/firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export async function fetchUserStamps(userId: string): Promise<Stamp[]> {
   try {
@@ -37,6 +39,7 @@ export async function uploadStampPhoto(
   base64Photo: string
 ): Promise<Stamp> {
   const supabase = getSupabase();
+  const firebaseStorage = getFirebaseStorage();
 
   if (supabase) {
     // Upload photo to Supabase Storage
@@ -48,20 +51,20 @@ export async function uploadStampPhoto(
     }
     const blob = new Blob([bytes], { type: "image/jpeg" });
 
-    const storagePath = `${userId}/${landmarkId}.jpg`;
-    const { error: storageError } = await supabase.storage
-      .from("stamps")
-      .upload(storagePath, blob, {
-        contentType: "image/jpeg",
-        upsert: true,
-      });
-
+    const storagePath = `e-passport/${userId}/${landmarkId}.jpg`;
     let photoUrl = "";
-    if (!storageError) {
-      const { data: urlData } = supabase.storage
-        .from("stamps")
-        .getPublicUrl(storagePath);
-      photoUrl = urlData?.publicUrl || "";
+
+    if (firebaseStorage) {
+      try {
+        const storageRef = ref(firebaseStorage, storagePath);
+        await uploadBytes(storageRef, blob, { contentType: "image/jpeg" });
+
+        photoUrl = await getDownloadURL(storageRef);
+      } catch (storageError) {
+        console.error("Firebase Storage upload error: ", storageError);
+
+        throw new Error("Failed to upload photo to Firebase storage.");
+      }
     }
 
     // Upsert stamp row

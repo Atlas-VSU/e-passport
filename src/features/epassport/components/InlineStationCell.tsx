@@ -12,17 +12,17 @@ interface InlineStationCellProps {
 // Helper to determine the dynamic CSS Grid cell layout styling by VSU tour index
 const getGridCellStyle = (index: number) => {
   switch (index) {
-    case 0: // Eco Park (Tall vertical rectangle)
+    case 0: // Search for Truth
       return { gridColumn: '1 / span 3', gridRow: '1 / span 2', aspectRatio: 'auto', height: '100%' };
-    case 1: // Admin Bldg (Horizontal rectangle)
+    case 1: // Japanese Garden
       return { gridColumn: '4 / span 3', gridRow: '1 / span 1', aspectRatio: '1.55', height: 'auto' };
-    case 2: // Library (Horizontal rectangle)
+    case 2: // Ecopark
       return { gridColumn: '4 / span 3', gridRow: '2 / span 1', aspectRatio: '1.55', height: 'auto' };
-    case 3: // Obelisk (Square)
+    case 3: // VSU Mall and Obelisk
       return { gridColumn: '1 / span 2', gridRow: '3 / span 1', aspectRatio: '1', height: 'auto' };
-    case 4: // Cell 5 (Square)
+    case 4: // Frog Fountain
       return { gridColumn: '3 / span 2', gridRow: '3 / span 1', aspectRatio: '1', height: 'auto' };
-    case 5: // Cell 6 (Square)
+    case 5: // VSU Beach
       return { gridColumn: '5 / span 2', gridRow: '3 / span 1', aspectRatio: '1', height: 'auto' };
     default:
       return {};
@@ -32,17 +32,23 @@ const getGridCellStyle = (index: number) => {
 // Helper to determine photo overlay color tones by landmark name
 const getLandmarkTint = (name: string) => {
   const lower = name.toLowerCase();
-  if (lower.includes('eco') || lower.includes('park')) {
+  if (lower.includes('eco') || lower.includes('park') || lower.includes('garden')) {
     return {
       gradient: 'linear-gradient(to top, rgba(10, 35, 15, 0.95) 0%, rgba(76, 175, 80, 0.3) 60%, transparent 100%)',
     };
   }
-  if (lower.includes('admin') || lower.includes('bldg') || lower.includes('building')) {
+  if (lower.includes('truth') || lower.includes('admin') || lower.includes('bldg')) {
     return {
       gradient: 'linear-gradient(to top, rgba(45, 30, 5, 0.95) 0%, rgba(201, 161, 58, 0.3) 60%, transparent 100%)',
     };
   }
-  if (lower.includes('obelisk') || lower.includes('structure') || lower.includes('monument')) {
+  if (
+    lower.includes('obelisk') ||
+    lower.includes('mall') ||
+    lower.includes('fountain') ||
+    lower.includes('beach') ||
+    lower.includes('water')
+  ) {
     return {
       gradient: 'linear-gradient(to top, rgba(10, 25, 50, 0.95) 0%, rgba(41, 128, 185, 0.3) 60%, transparent 100%)',
     };

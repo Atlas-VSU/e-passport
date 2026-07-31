@@ -8,6 +8,7 @@ import { Page, Profile, Stamp, Landmark } from "../types";
 import { checkSession, signIn, signUp, signOut } from "../features/auth/services/auth";
 import { uploadStampPhoto } from "../features/landmark/services/stamps";
 import { acceptConsent } from "../features/auth/services/profile";
+import { landmarks } from "../lib/landmarks";
 
 export function useEPassport() {
   const [currentPage, setCurrentPage] = useState<Page>(Page.LOADING);
@@ -33,10 +34,13 @@ export function useEPassport() {
         const sessionData = await checkSession();
         if (sessionData) {
           setCurrentUser(sessionData.user);
-          setStamps(sessionData.stamps);
+          const activeStamps = (sessionData.stamps || []).filter((s: Stamp) =>
+            landmarks.some((l) => l.id === s.landmark_id)
+          );
+          setStamps(activeStamps);
           setMilestonesFired({
-            m3: sessionData.stamps.length >= 3,
-            m6: sessionData.stamps.length >= 6,
+            m3: activeStamps.length >= 3,
+            m6: activeStamps.length >= 6,
           });
 
           if (!sessionData.user.consent_given) {
@@ -109,10 +113,13 @@ export function useEPassport() {
     try {
       const sessionData = await signIn(email, password);
       setCurrentUser(sessionData.user);
-      setStamps(sessionData.stamps);
+      const activeStamps = (sessionData.stamps || []).filter((s: Stamp) =>
+        landmarks.some((l) => l.id === s.landmark_id)
+      );
+      setStamps(activeStamps);
       setMilestonesFired({
-        m3: sessionData.stamps.length >= 3,
-        m6: sessionData.stamps.length >= 6,
+        m3: activeStamps.length >= 3,
+        m6: activeStamps.length >= 6,
       });
 
       if (!sessionData.user.consent_given) {
@@ -143,10 +150,13 @@ export function useEPassport() {
     try {
       const sessionData = await signUp(firstName, lastName, studentId, email, password);
       setCurrentUser(sessionData.user);
-      setStamps(sessionData.stamps);
+      const activeStamps = (sessionData.stamps || []).filter((s: Stamp) =>
+        landmarks.some((l) => l.id === s.landmark_id)
+      );
+      setStamps(activeStamps);
       setMilestonesFired({
-        m3: sessionData.stamps.length >= 3,
-        m6: sessionData.stamps.length >= 6,
+        m3: activeStamps.length >= 3,
+        m6: activeStamps.length >= 6,
       });
 
       if (!sessionData.user.consent_given) {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Building, Leaf, BookOpen, Award, Trophy, Palmtree, LucideIcon } from 'lucide-react';
+import { Check, Building, Leaf, BookOpen, Award, Trophy, Palmtree, Compass, Flower2, Droplets, LucideIcon } from 'lucide-react';
 import { Landmark, Stamp } from '../../../../types';
 import ImageWithLoader from '../../../../components/ImageWithLoader';
 
@@ -36,12 +36,16 @@ export default function MapNode({
   const sizeClass = !isStamped ? 'w-[84px] h-[84px]' : 'w-[68px] h-[68px]';
 
   // Resolve zone specific Icon
-  const SpecificIcon = iconMap[landmark.zoneType || ''] ||
-    (landmark.icon === 'local_library' ? BookOpen :
-      landmark.icon === 'stadium' ? Trophy :
-        landmark.icon === 'verified' ? Award :
-          landmark.icon === 'beach_access' ? Palmtree :
-            landmark.icon === 'nature_people' ? Leaf : Building);
+  const SpecificIcon =
+    landmark.icon === 'compass' ? Compass :
+      landmark.icon === 'flower' ? Flower2 :
+        landmark.icon === 'droplets' ? Droplets :
+          (iconMap[landmark.zoneType || ''] ||
+            (landmark.icon === 'local_library' ? BookOpen :
+              landmark.icon === 'stadium' ? Trophy :
+                landmark.icon === 'verified' ? Award :
+                  landmark.icon === 'beach_access' ? Palmtree :
+                    landmark.icon === 'nature_people' ? Leaf : Building));
 
   return (
     <div

@@ -32,6 +32,7 @@ export interface Landmark {
   order: number;
   label?: string; // e.g. "Landmark 01"
   photoUrl?: string; // default showcase photo
+  photoUrls?: string[]; // array of photo URLs for swiping
   zoneType?: 'green' | 'water' | 'building' | 'sports' | 'open';
   zoneRadius?: number;
   mapX?: number;

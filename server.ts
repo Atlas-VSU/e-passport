@@ -3,6 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { initializeApp as initFirebaseAdmin, cert, getApps } from 'firebase-admin/app';
+import { getStorage as getAdminStorage } from 'firebase-admin/storage';
 import dotenv from 'dotenv';
 
 // Load environment variables — .env.local overrides .env (mirrors Vite's convention)
@@ -44,6 +46,32 @@ if (supabaseUrl && supabaseServiceKey) {
   }
 } else {
   console.warn('SUPABASE_URL or keys are missing from environment. Using local server state.');
+}
+
+const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || '';
+const firebaseClientEmail = process.env.FIREBASE_CLIENT_EMAIL || '';
+const firebasePrivateKey = (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+const firebaseStorageBucket = process.env.FIREBASE_STORAGE_BUCKET || '';
+
+let adminStorageBucket: any = null;
+
+if (firebaseProjectId && firebaseClientEmail && firebasePrivateKey && firebaseStorageBucket) {
+  try {
+    const fbApp = getApps().length
+      ? getApps()[0]
+      : initFirebaseAdmin({
+        credential: cert({
+          projectId: firebaseProjectId,
+          clientEmail: firebaseClientEmail,
+          privateKey: firebasePrivateKey
+        }),
+        storageBucket: firebaseStorageBucket
+      });
+    adminStorageBucket = getAdminStorage(fbApp).bucket();
+    console.log("Firebase Admin Storage initialized successfully.");
+  } catch (err) {
+    console.error("Failed to initialize Firebase Admin Storage:", err);
+  }
 }
 
 // =========================================================================
@@ -323,7 +351,7 @@ app.post('/api/auth/consent', async (req, res) => {
     currentSessionUser.consent_timestamp = timestamp;
     localProfiles[userId] = { ...currentSessionUser };
   }
-  
+
   if (currentSessionUser && currentSessionUser.id === userId) {
     currentSessionUser = { ...currentSessionUser, consent_given: consentGiven, consent_timestamp: timestamp };
   }
@@ -365,14 +393,14 @@ app.get('/api/stamps', async (req, res) => {
 // 7. Upload stamp photo & insert stamp row
 app.post('/api/stamps/upload', async (req, res) => {
   const { userId, landmarkId, photoBase64 } = req.body;
-  
+
   if (!userId || !landmarkId || !photoBase64) {
     return res.status(400).json({ error: 'Missing required fields: userId, landmarkId, or photoBase64' });
   }
 
   // ── Sanitize IDs before they're ever used in a file path or storage key ──
   const safeUserId = sanitizeId(userId);
-  const safeLandmarkId = sanitizeId(landmarkId);  
+  const safeLandmarkId = sanitizeId(landmarkId);
 
   if (!safeUserId || !safeLandmarkId) {
     return res.status(400).json({ error: 'Invalid user or landmark identifier.' });
@@ -400,28 +428,22 @@ app.post('/api/stamps/upload', async (req, res) => {
   let photoUrl = '';
 
   // If Supabase is connected, attempt uploading to Supabase Storage Bucket 'stamps'
-  if (supabaseAdmin) {
+  // If Firebase Admin is connected, attempt uploading to Firebase Storage Bucket
+  if (adminStorageBucket) {
     try {
-      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-        .from('stamps')
-        .upload(`${safeUserId}/${safeLandmarkId}.jpg`, buffer, {
-          contentType: 'image/jpeg',
-          upsert: true
-        });
+      const storagePath = `e-passport/${safeUserId}/${safeLandmarkId}.jpg`;
+      const file = adminStorageBucket.file(storagePath);
 
-      if (uploadError) {
-        console.error('Supabase Storage upload error:', uploadError);
-      } else {
-        const { data: urlData } = supabaseAdmin.storage
-          .from('stamps')
-          .getPublicUrl(`${safeUserId}/${safeLandmarkId}.jpg`);
-        
-        photoUrl = urlData?.publicUrl || '';
-      }
+      // Save the file to the bucket
+      await file.save(buffer, { contentType: 'image/jpeg' });
+
+      // Construct the public download URL (since your rules allow public reads)
+      photoUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseStorageBucket}/o/e-passport%2F${safeUserId}%2F${safeLandmarkId}.jpg?alt=media`;
     } catch (err) {
-      console.error('Failed to upload file to Supabase Storage:', err);
+      console.error('Failed to upload file to Firebase Storage from Express:', err);
     }
   }
+
 
   // Local fallback photo save if Supabase upload failed or is not configured
   if (!photoUrl) {
@@ -456,7 +478,7 @@ app.post('/api/stamps/upload', async (req, res) => {
           photo_url: photoUrl,
           stamped_at: new Date().toISOString()
         }, { onConflict: 'user_id,landmark_id' })
-        .select();  
+        .select();
 
       if (error) {
         console.error('Error inserting stamp in Supabase:', error);

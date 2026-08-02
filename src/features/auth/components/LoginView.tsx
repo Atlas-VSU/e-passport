@@ -5,6 +5,8 @@ import AuthModeSwitcher from "./AuthModeSwitcher";
 import LoginForm from "./LoginForm";
 import SignUpForm from "./SignUpForm";
 
+import VerisFooter from "../../../components/VerisFooter";
+
 type AuthMode = "login" | "signup";
 
 interface LoginViewProps {
@@ -48,58 +50,63 @@ export default function LoginView({
   };
 
   return (
-    <main className="w-full min-h-screen bg-[#FDF9F0] p-4 md:p-6 flex flex-col gap-4">
-      {/* ── COVER ── */}
-      <LoginCover />
+    <main className="w-full min-h-screen bg-[#FDF9F0] p-4 md:p-6 flex flex-col justify-between gap-4">
+      <div className="w-full flex flex-col gap-4 flex-1">
+        {/* ── COVER ── */}
+        <LoginCover />
 
-      {/* ── CARD ── */}
-      <section
-        aria-labelledby="auth-form-heading"
-        className="relative z-20 -mt-10 rounded-b-4xl border-2 border-dashed border-[#CBA052]/40 bg-[#FFFDF8] p-4 pt-16 shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden"
-      >
-        <div className="absolute inset-x-0 -top-3 h-8 bg-[#FFFDF8] bg-[radial-gradient(circle_at_top,rgba(255,253,248,0.96)_20%,transparent_20%)] bg-size-[16px_16px]" />
-        <div className="absolute inset-x-6 -top-5 h-1 border-t-15 border-dashed border-[#CBA052]/90" />
-        <div className="absolute left-1/2 -top-10 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-[#CBA052]/90 bg-[#004225] shadow-sm" />
-        <h2 id="auth-form-heading" className="sr-only">
-          Authentication form
-        </h2>
+        {/* ── CARD ── */}
+        <section
+          aria-labelledby="auth-form-heading"
+          className="relative z-20 -mt-10 rounded-b-4xl border-2 border-dashed border-[#CBA052]/40 bg-[#FFFDF8] p-4 pt-16 shadow-[0_10px_30px_rgba(0,0,0,0.06)] overflow-hidden"
+        >
+          <div className="absolute inset-x-0 -top-3 h-8 bg-[#FFFDF8] bg-[radial-gradient(circle_at_top,rgba(255,253,248,0.96)_20%,transparent_20%)] bg-size-[16px_16px]" />
+          <div className="absolute inset-x-6 -top-5 h-1 border-t-15 border-dashed border-[#CBA052]/90" />
+          <div className="absolute left-1/2 -top-10 h-4 w-4 -translate-x-1/2 rounded-full border-2 border-[#CBA052]/90 bg-[#004225] shadow-sm" />
+          <h2 id="auth-form-heading" className="sr-only">
+            Authentication form
+          </h2>
 
-        {/* Mode Switcher */}
-        <AuthModeSwitcher mode={mode} onSwitchMode={switchMode} />
+          {/* Mode Switcher */}
+          <AuthModeSwitcher mode={mode} onSwitchMode={switchMode} />
 
-        {authError && (
-          <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-3 text-center mb-4">
-            <AlertCircle className="w-4 h-4 shrink-0" />
-            <span>{authError}</span>
-          </div>
-        )}
+          {authError && (
+            <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-3 text-center mb-4">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{authError}</span>
+            </div>
+          )}
 
-        {/* ── LOGIN FORM ── */}
-        {mode === "login" && (
-          <LoginForm
-            onLogin={onLogin}
-            isLoggingIn={isLoggingIn}
-            onSwitchToSignup={() => switchMode("signup")}
-            inputClass={inputClass}
-            labelClass={labelClass}
-            iconWrap={iconWrap}
-            iconSlotClass={iconSlotClass}
-          />
-        )}
+          {/* ── LOGIN FORM ── */}
+          {mode === "login" && (
+            <LoginForm
+              onLogin={onLogin}
+              isLoggingIn={isLoggingIn}
+              onSwitchToSignup={() => switchMode("signup")}
+              inputClass={inputClass}
+              labelClass={labelClass}
+              iconWrap={iconWrap}
+              iconSlotClass={iconSlotClass}
+            />
+          )}
 
-        {/* ── SIGN UP FORM ── */}
-        {mode === "signup" && (
-          <SignUpForm
-            onSignUp={onSignUp}
-            isLoggingIn={isLoggingIn}
-            onSwitchToLogin={() => switchMode("login")}
-            inputClass={inputClass}
-            labelClass={labelClass}
-            iconWrap={iconWrap}
-            iconSlotClass={iconSlotClass}
-          />
-        )}
-      </section>
+          {/* ── SIGN UP FORM ── */}
+          {mode === "signup" && (
+            <SignUpForm
+              onSignUp={onSignUp}
+              isLoggingIn={isLoggingIn}
+              onSwitchToLogin={() => switchMode("login")}
+              inputClass={inputClass}
+              labelClass={labelClass}
+              iconWrap={iconWrap}
+              iconSlotClass={iconSlotClass}
+            />
+          )}
+        </section>
+      </div>
+
+      {/* ── FOOTER ── */}
+      <VerisFooter />
     </main>
   );
 }

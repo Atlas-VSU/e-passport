@@ -5,6 +5,8 @@
 
 import React from "react";
 
+import { VerisMark } from "./VerisFooter";
+
 interface MobileDeviceGateProps {
   children: React.ReactNode;
 }
@@ -78,8 +80,10 @@ export default function MobileDeviceGate({ children }: MobileDeviceGateProps) {
           </div>
 
           {/* Footer badge */}
-          <div className="relative z-10 flex items-center gap-2 font-mono text-[9px] text-[#CBA052] uppercase tracking-[0.18em] border border-[#CBA052]/30 rounded-full px-4 py-2 bg-[#002b18]/60 backdrop-blur-[2px] mt-1">
-            <span>Viscan E-Pasaporte</span>
+          <div className="relative z-10 flex items-center gap-1.5 font-mono text-[9px] text-[#CBA052] uppercase tracking-[0.18em] border border-[#CBA052]/30 rounded-full px-4 py-2 bg-[#002b18]/60 backdrop-blur-[2px] mt-1">
+            <span>Powered by</span>
+            <VerisMark className="w-3 h-3 text-[#CBA052]" />
+            <span className="font-bold">VERIS</span>
           </div>
         </div>
       </div>

@@ -112,12 +112,46 @@ function buildProfile(userId: string, meta: Record<string, any>, email: string):
 function isValidImageBuffer(buffer: Buffer): boolean {
   if (buffer.length < 4) return false;
 
+  // JPEG: FF D8 FF
   const isJpeg = buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+
+  // PNG: 89 50 4E 47
   const isPng =
     buffer[0] === 0x89 && buffer[1] === 0x50 &&
     buffer[2] === 0x4E && buffer[3] === 0x47;
 
-  return isJpeg || isPng;
+  // GIF: GIF89a (47 49 46 38 39 61) or GIF87a (47 49 46 38 37 61)
+  const isGif = buffer.length >= 6 &&
+    buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 &&
+    buffer[3] === 0x38 && (buffer[4] === 0x39 || buffer[4] === 0x37) &&
+    buffer[5] === 0x61;
+
+  // WebP: RIFF (52 49 46 46) ... WEBP (57 45 42 50)
+  const isWebp = buffer.length >= 12 &&
+    buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+    buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50;
+
+  // BMP: BM (42 4D)
+  const isBmp = buffer[0] === 0x42 && buffer[1] === 0x4D;
+
+  // TIFF: II* (49 49 2A 00) or MM* (4D 4D 00 2A)
+  const isTiff =
+    (buffer[0] === 0x49 && buffer[1] === 0x49 && buffer[2] === 0x2A && buffer[3] === 0x00) ||
+    (buffer[0] === 0x4D && buffer[1] === 0x4D && buffer[2] === 0x00 && buffer[3] === 0x2A);
+
+  // HEIC/HEIF: ftypheic, ftypheix, ftyphevc, ftypmif1, ftypmsf1 etc. (usually bytes 4-11 contain ftypheic/ftypheix/etc.)
+  // Often check if bytes 4-7 are 'ftyp' (66 74 79 70)
+  const isHeic = buffer.length >= 12 &&
+    buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70 &&
+    (
+      buffer.toString('ascii', 8, 12) === 'heic' ||
+      buffer.toString('ascii', 8, 12) === 'heix' ||
+      buffer.toString('ascii', 8, 12) === 'hevc' ||
+      buffer.toString('ascii', 8, 12) === 'mif1' ||
+      buffer.toString('ascii', 8, 12) === 'msf1'
+    );
+
+  return isJpeg || isPng || isGif || isWebp || isBmp || isTiff || isHeic;
 }
 
 // =========================================================================
@@ -420,7 +454,7 @@ app.post('/api/stamps/upload', async (req, res) => {
 
   // ── Type check: verify actual file signature, not just the claimed MIME type ──
   if (!isValidImageBuffer(buffer)) {
-    return res.status(400).json({ error: 'File does not appear to be a valid JPEG or PNG image.' });
+    return res.status(400).json({ error: 'File does not appear to be a valid photo format.' });
   }
 
   const filename = `${safeUserId}-${safeLandmarkId}-${Date.now()}.jpg`;

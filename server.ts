@@ -19,9 +19,14 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Ensure upload directory exists for local fallback image saving
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn('Local uploads directory not created (read-only filesystem):', err);
 }
+
 
 // Serve uploaded images statically
 app.use('/public/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));

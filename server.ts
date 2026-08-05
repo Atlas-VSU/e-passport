@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import fs from 'fs';
-import { createServer as createViteServer } from 'vite';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { initializeApp as initFirebaseAdmin, cert, getApps } from 'firebase-admin/app';
 import { getStorage as getAdminStorage } from 'firebase-admin/storage';
@@ -20,9 +19,14 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // Ensure upload directory exists for local fallback image saving
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn('Local uploads directory not created (read-only filesystem):', err);
 }
+
 
 // Serve uploaded images statically
 app.use('/public/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
@@ -547,11 +551,13 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 });
 
 // =========================================================================
+// =========================================================================
 // VITE ENGINE SETUP OR STATIC FRONTEND SERVING
 // =========================================================================
 
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
+    const { createServer: createViteServer } = await import('vite');
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa'
@@ -570,4 +576,8 @@ async function startServer() {
   });
 }
 
-startServer();
+export default app;
+
+if (!process.env.VERCEL) {
+  startServer();
+}

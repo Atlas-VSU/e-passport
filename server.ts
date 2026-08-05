@@ -3,6 +3,8 @@ import path from 'path';
 import fs from 'fs';
 import { createServer as createViteServer } from 'vite';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { initializeApp as initFirebaseAdmin, cert, getApps } from 'firebase-admin/app';
+import { getStorage as getAdminStorage } from 'firebase-admin/storage';
 import dotenv from 'dotenv';
 
 // Load environment variables — .env.local overrides .env (mirrors Vite's convention)
@@ -46,6 +48,32 @@ if (supabaseUrl && supabaseServiceKey) {
   console.warn('SUPABASE_URL or keys are missing from environment. Using local server state.');
 }
 
+const firebaseProjectId = process.env.FIREBASE_PROJECT_ID || '';
+const firebaseClientEmail = process.env.FIREBASE_CLIENT_EMAIL || '';
+const firebasePrivateKey = (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+const firebaseStorageBucket = process.env.FIREBASE_STORAGE_BUCKET || '';
+
+let adminStorageBucket: any = null;
+
+if (firebaseProjectId && firebaseClientEmail && firebasePrivateKey && firebaseStorageBucket) {
+  try {
+    const fbApp = getApps().length
+      ? getApps()[0]
+      : initFirebaseAdmin({
+        credential: cert({
+          projectId: firebaseProjectId,
+          clientEmail: firebaseClientEmail,
+          privateKey: firebasePrivateKey
+        }),
+        storageBucket: firebaseStorageBucket
+      });
+    adminStorageBucket = getAdminStorage(fbApp).bucket();
+    console.log("Firebase Admin Storage initialized successfully.");
+  } catch (err) {
+    console.error("Failed to initialize Firebase Admin Storage:", err);
+  }
+}
+
 // =========================================================================
 // LOCAL FALLBACK MEMORY STORES
 // =========================================================================
@@ -84,12 +112,46 @@ function buildProfile(userId: string, meta: Record<string, any>, email: string):
 function isValidImageBuffer(buffer: Buffer): boolean {
   if (buffer.length < 4) return false;
 
+  // JPEG: FF D8 FF
   const isJpeg = buffer[0] === 0xFF && buffer[1] === 0xD8 && buffer[2] === 0xFF;
+
+  // PNG: 89 50 4E 47
   const isPng =
     buffer[0] === 0x89 && buffer[1] === 0x50 &&
     buffer[2] === 0x4E && buffer[3] === 0x47;
 
-  return isJpeg || isPng;
+  // GIF: GIF89a (47 49 46 38 39 61) or GIF87a (47 49 46 38 37 61)
+  const isGif = buffer.length >= 6 &&
+    buffer[0] === 0x47 && buffer[1] === 0x49 && buffer[2] === 0x46 &&
+    buffer[3] === 0x38 && (buffer[4] === 0x39 || buffer[4] === 0x37) &&
+    buffer[5] === 0x61;
+
+  // WebP: RIFF (52 49 46 46) ... WEBP (57 45 42 50)
+  const isWebp = buffer.length >= 12 &&
+    buffer[0] === 0x52 && buffer[1] === 0x49 && buffer[2] === 0x46 && buffer[3] === 0x46 &&
+    buffer[8] === 0x57 && buffer[9] === 0x45 && buffer[10] === 0x42 && buffer[11] === 0x50;
+
+  // BMP: BM (42 4D)
+  const isBmp = buffer[0] === 0x42 && buffer[1] === 0x4D;
+
+  // TIFF: II* (49 49 2A 00) or MM* (4D 4D 00 2A)
+  const isTiff =
+    (buffer[0] === 0x49 && buffer[1] === 0x49 && buffer[2] === 0x2A && buffer[3] === 0x00) ||
+    (buffer[0] === 0x4D && buffer[1] === 0x4D && buffer[2] === 0x00 && buffer[3] === 0x2A);
+
+  // HEIC/HEIF: ftypheic, ftypheix, ftyphevc, ftypmif1, ftypmsf1 etc. (usually bytes 4-11 contain ftypheic/ftypheix/etc.)
+  // Often check if bytes 4-7 are 'ftyp' (66 74 79 70)
+  const isHeic = buffer.length >= 12 &&
+    buffer[4] === 0x66 && buffer[5] === 0x74 && buffer[6] === 0x79 && buffer[7] === 0x70 &&
+    (
+      buffer.toString('ascii', 8, 12) === 'heic' ||
+      buffer.toString('ascii', 8, 12) === 'heix' ||
+      buffer.toString('ascii', 8, 12) === 'hevc' ||
+      buffer.toString('ascii', 8, 12) === 'mif1' ||
+      buffer.toString('ascii', 8, 12) === 'msf1'
+    );
+
+  return isJpeg || isPng || isGif || isWebp || isBmp || isTiff || isHeic;
 }
 
 // =========================================================================
@@ -323,7 +385,7 @@ app.post('/api/auth/consent', async (req, res) => {
     currentSessionUser.consent_timestamp = timestamp;
     localProfiles[userId] = { ...currentSessionUser };
   }
-  
+
   if (currentSessionUser && currentSessionUser.id === userId) {
     currentSessionUser = { ...currentSessionUser, consent_given: consentGiven, consent_timestamp: timestamp };
   }
@@ -365,14 +427,14 @@ app.get('/api/stamps', async (req, res) => {
 // 7. Upload stamp photo & insert stamp row
 app.post('/api/stamps/upload', async (req, res) => {
   const { userId, landmarkId, photoBase64 } = req.body;
-  
+
   if (!userId || !landmarkId || !photoBase64) {
     return res.status(400).json({ error: 'Missing required fields: userId, landmarkId, or photoBase64' });
   }
 
   // ── Sanitize IDs before they're ever used in a file path or storage key ──
   const safeUserId = sanitizeId(userId);
-  const safeLandmarkId = sanitizeId(landmarkId);  
+  const safeLandmarkId = sanitizeId(landmarkId);
 
   if (!safeUserId || !safeLandmarkId) {
     return res.status(400).json({ error: 'Invalid user or landmark identifier.' });
@@ -392,7 +454,7 @@ app.post('/api/stamps/upload', async (req, res) => {
 
   // ── Type check: verify actual file signature, not just the claimed MIME type ──
   if (!isValidImageBuffer(buffer)) {
-    return res.status(400).json({ error: 'File does not appear to be a valid JPEG or PNG image.' });
+    return res.status(400).json({ error: 'File does not appear to be a valid photo format.' });
   }
 
   const filename = `${safeUserId}-${safeLandmarkId}-${Date.now()}.jpg`;
@@ -400,28 +462,22 @@ app.post('/api/stamps/upload', async (req, res) => {
   let photoUrl = '';
 
   // If Supabase is connected, attempt uploading to Supabase Storage Bucket 'stamps'
-  if (supabaseAdmin) {
+  // If Firebase Admin is connected, attempt uploading to Firebase Storage Bucket
+  if (adminStorageBucket) {
     try {
-      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-        .from('stamps')
-        .upload(`${safeUserId}/${safeLandmarkId}.jpg`, buffer, {
-          contentType: 'image/jpeg',
-          upsert: true
-        });
+      const storagePath = `e-passport/${safeUserId}/${safeLandmarkId}.jpg`;
+      const file = adminStorageBucket.file(storagePath);
 
-      if (uploadError) {
-        console.error('Supabase Storage upload error:', uploadError);
-      } else {
-        const { data: urlData } = supabaseAdmin.storage
-          .from('stamps')
-          .getPublicUrl(`${safeUserId}/${safeLandmarkId}.jpg`);
-        
-        photoUrl = urlData?.publicUrl || '';
-      }
+      // Save the file to the bucket
+      await file.save(buffer, { contentType: 'image/jpeg' });
+
+      // Construct the public download URL (since your rules allow public reads)
+      photoUrl = `https://firebasestorage.googleapis.com/v0/b/${firebaseStorageBucket}/o/e-passport%2F${safeUserId}%2F${safeLandmarkId}.jpg?alt=media`;
     } catch (err) {
-      console.error('Failed to upload file to Supabase Storage:', err);
+      console.error('Failed to upload file to Firebase Storage from Express:', err);
     }
   }
+
 
   // Local fallback photo save if Supabase upload failed or is not configured
   if (!photoUrl) {
@@ -456,7 +512,7 @@ app.post('/api/stamps/upload', async (req, res) => {
           photo_url: photoUrl,
           stamped_at: new Date().toISOString()
         }, { onConflict: 'user_id,landmark_id' })
-        .select();  
+        .select();
 
       if (error) {
         console.error('Error inserting stamp in Supabase:', error);

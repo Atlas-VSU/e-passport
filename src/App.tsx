@@ -40,10 +40,11 @@ export default function App() {
   useEffect(() => {
     // Preload landmark photos
     landmarks.forEach((landmark) => {
-      if (landmark.photoUrl) {
+      const urlsToPreload = landmark.photoUrls || (landmark.photoUrl ? [landmark.photoUrl] : []);
+      urlsToPreload.forEach((url) => {
         const img = new Image();
-        img.src = landmark.photoUrl;
-      }
+        img.src = url;
+      });
     });
 
     // Preload large map and background texture assets

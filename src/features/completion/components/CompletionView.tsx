@@ -2,6 +2,7 @@ import React from 'react';
 import { Award, Download, Share2, Sparkles, BookOpen, RotateCcw, Map } from 'lucide-react';
 import { motion } from 'motion/react';
 import { Landmark, Stamp } from '../../../types';
+import { getProxiedImageUrl } from '../../../lib/utils';
 
 interface CompletionViewProps {
   landmarks: Landmark[];
@@ -101,7 +102,7 @@ export default function CompletionView({
                       {/* Actual photo thumbnail */}
                       {matchedStamp.photo_url && (
                         <img
-                          src={matchedStamp.photo_url}
+                          src={getProxiedImageUrl(matchedStamp.photo_url)}
                           alt={lm.name}
                           className="absolute inset-0 w-full h-full object-cover opacity-30 rounded-2xl"
                         />
@@ -123,7 +124,7 @@ export default function CompletionView({
                   )}
 
                   <span className="font-mono text-[9px] text-[#004225] font-extrabold mt-2 text-center uppercase tracking-wider truncate w-full px-1 z-10">
-                    {lm.name.split(' ')[0] || 'Landmark'}
+                    {lm.name || 'Landmark'}
                   </span>
                 </motion.div>
               );

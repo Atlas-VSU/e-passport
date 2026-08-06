@@ -75,3 +75,12 @@ export function triggerHapticTick() {
     }
   }
 }
+
+// Helper to rewrite Firebase Storage URLs to go through our server proxy to avoid CORS/canvas taint issues
+export function getProxiedImageUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('https://firebasestorage.googleapis.com')) {
+    return `/api/proxy-image?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+}

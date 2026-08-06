@@ -1,4 +1,5 @@
 import React from 'react';
+import { getProxiedImageUrl } from '../../../../lib/utils';
 import { Check, Building, Leaf, BookOpen, Award, Trophy, Palmtree, Compass, Flower2, Droplets, LucideIcon } from 'lucide-react';
 import { Landmark, Stamp } from '../../../../types';
 import ImageWithLoader from '../../../../components/ImageWithLoader';
@@ -75,7 +76,7 @@ export default function MapNode({
         {isStamped ? (
           <div className="relative w-full h-full rounded-full overflow-hidden">
             <ImageWithLoader
-              src={stamp?.photo_url || landmark.photoUrl}
+              src={getProxiedImageUrl(stamp?.photo_url) || landmark.photoUrl}
               alt={landmark.name}
               className="w-full h-full object-cover grayscale-[25%] contrast-[105%] brightness-[90%]"
             />

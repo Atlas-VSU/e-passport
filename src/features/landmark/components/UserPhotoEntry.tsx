@@ -1,6 +1,7 @@
 import React from 'react';
 import { Stamp } from '../../../types';
 import ImageWithLoader from '../../../components/ImageWithLoader';
+import { getProxiedImageUrl } from '../../../lib/utils';
 
 interface UserPhotoEntryProps {
   stamp: Stamp;
@@ -22,7 +23,7 @@ export default function UserPhotoEntry({ stamp }: UserPhotoEntryProps) {
       >
         <div className="aspect-[4/3] rounded-lg overflow-hidden relative">
           <ImageWithLoader
-            src={stamp.photo_url}
+            src={getProxiedImageUrl(stamp.photo_url)}
             alt="Your entry photo"
             className="w-full h-full object-cover"
             showSpinner

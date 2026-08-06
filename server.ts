@@ -73,6 +73,20 @@ if (firebaseProjectId && firebaseClientEmail && firebasePrivateKey && firebaseSt
       });
     adminStorageBucket = getAdminStorage(fbApp).bucket();
     console.log("Firebase Admin Storage initialized successfully.");
+
+    // Dynamically set CORS configuration on the storage bucket to allow direct browser requests
+    adminStorageBucket.setCorsConfiguration([
+      {
+        maxAgeSeconds: 3600,
+        method: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        origin: ['*'],
+        responseHeader: ['Content-Type', 'Access-Control-Allow-Origin', 'Authorization', 'Content-Length', 'User-Agent', 'X-Requested-With'],
+      }
+    ]).then(() => {
+      console.log("Firebase Storage CORS configuration updated successfully.");
+    }).catch((err: any) => {
+      console.warn("Failed to dynamically configure Firebase Storage CORS (will fall back to proxy):", err.message || err);
+    });
   } catch (err) {
     console.error("Failed to initialize Firebase Admin Storage:", err);
   }
@@ -538,6 +552,38 @@ app.post('/api/stamps/upload', async (req, res) => {
   localStamps[safeUserId].push(newStamp);
 
   res.json({ stamp: newStamp, source: 'local', message: 'Landmark stamped successfully!' });
+});
+
+// 8. Image proxy endpoint to bypass Firebase Storage CORS restrictions
+app.get('/api/proxy-image', async (req, res) => {
+  const imageUrl = req.query.url as string;
+  if (!imageUrl) {
+    return res.status(400).json({ error: 'URL query parameter is required' });
+  }
+
+  // Security check: Only allow proxing from firebase storage
+  if (!imageUrl.startsWith('https://firebasestorage.googleapis.com')) {
+    return res.status(403).json({ error: 'Only Firebase Storage URLs can be proxied' });
+  }
+
+  try {
+    const response = await fetch(imageUrl);
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch image from storage' });
+    }
+
+    const contentType = response.headers.get('content-type') || 'image/jpeg';
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 1 day
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    res.send(buffer);
+  } catch (err) {
+    console.error('Error proxying image:', err);
+    res.status(500).json({ error: 'Internal proxy error' });
+  }
 });
 
 // =========================================================================

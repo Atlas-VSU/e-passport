@@ -2,6 +2,7 @@ import React from 'react';
 import { Lock, Navigation } from 'lucide-react';
 import { Landmark, Stamp } from '../types';
 import ImageWithLoader from './ImageWithLoader';
+import { getProxiedImageUrl } from '../lib/utils';
 
 interface StampBadgeProps {
   landmark: Landmark;
@@ -37,7 +38,7 @@ export default function StampBadge({ landmark, stamp, isActive, isLocked, onClic
         <div className="relative w-12 h-12 rounded-full border-2 border-white shadow-md flex-shrink-0 overflow-hidden transform rotate-3 group-hover:rotate-12 transition-transform duration-300">
           <ImageWithLoader 
             className="w-full h-full object-cover" 
-            src={stamp.photo_url || landmark.photoUrl} 
+            src={getProxiedImageUrl(stamp.photo_url) || landmark.photoUrl} 
             alt={landmark.name} 
           />
           {/* Green Check Badge overlay */}

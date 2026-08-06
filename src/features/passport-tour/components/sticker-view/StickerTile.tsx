@@ -1,4 +1,4 @@
-import { playStampSound, seededRandom, triggerHapticTick } from '../../../../lib/utils';
+import { playStampSound, seededRandom, triggerHapticTick, getProxiedImageUrl } from '../../../../lib/utils';
 import React, { useState } from 'react';
 import { Check, Lock } from 'lucide-react';
 import { Landmark, Stamp } from '../../../../types';
@@ -64,7 +64,7 @@ export default function StickerTile({ landmark, stamp, idx, onSelect }: StickerT
                         {/* Overflow-hidden inner photo container */}
                         <div className="w-full h-full rounded-full border-[2.5px] border-[#CBA052] bg-white overflow-hidden flex items-center justify-center shadow-md">
                             <ImageWithLoader
-                                src={stamp.photo_url || landmark.photoUrl}
+                                src={getProxiedImageUrl(stamp.photo_url) || landmark.photoUrl}
                                 alt=""
                                 className="w-full h-full object-cover"
                             />

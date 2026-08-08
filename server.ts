@@ -108,6 +108,7 @@ let currentSessionUser: any = null;
 // HELPER: Build a profile object from Supabase data
 // =========================================================================
 function buildProfile(userId: string, meta: Record<string, any>, email: string): Record<string, any> {
+  const consentGiven = meta.consent_given ?? false;
   return {
     id: userId,
     first_name: meta.first_name || null,
@@ -116,8 +117,8 @@ function buildProfile(userId: string, meta: Record<string, any>, email: string):
     email,
     student_id: meta.student_id || null,
     avatar_url: null,
-    consent_given: false,
-    consent_timestamp: null,
+    consent_given: consentGiven,
+    consent_timestamp: meta.consent_timestamp || (consentGiven ? new Date().toISOString() : null),
     created_at: new Date().toISOString()
   };
 }
@@ -195,7 +196,8 @@ app.get('/api/auth/session', async (req, res) => {
 
 // 3. Sign Up — creates a new Supabase Auth user and profile row
 app.post('/api/auth/signup', async (req, res) => {
-  const { firstName, lastName, studentId, email, password } = req.body;
+  const { firstName, lastName, studentId, email, password, consentGiven = true } = req.body;
+  const consentTimestamp = consentGiven ? new Date().toISOString() : null;
 
   if (!firstName || !lastName || !studentId || !email || !password) {
     return res.status(400).json({ error: 'All fields are required.' });
@@ -250,7 +252,8 @@ app.post('/api/auth/signup', async (req, res) => {
           email,
           student_id: studentId,
           avatar_url: null,
-          consent_given: false
+          consent_given: consentGiven,
+          consent_timestamp: consentTimestamp
         }, { onConflict: 'id' })
         .select()
         .single();
@@ -259,7 +262,7 @@ app.post('/api/auth/signup', async (req, res) => {
         console.error('Error upserting profile in Supabase:', profileError);
       }
 
-      const profile = profileData || buildProfile(authData.user.id, { first_name: firstName, last_name: lastName, student_id: studentId }, email);
+      const profile = profileData || buildProfile(authData.user.id, { first_name: firstName, last_name: lastName, student_id: studentId, consent_given: consentGiven, consent_timestamp: consentTimestamp }, email);
       currentSessionUser = profile;
       if (!localStamps[profile.id]) localStamps[profile.id] = [];
 
@@ -278,7 +281,7 @@ app.post('/api/auth/signup', async (req, res) => {
 
   const localId = `local-${Date.now()}`;
   const newProfile = {
-    ...buildProfile(localId, { first_name: firstName, last_name: lastName, student_id: studentId }, email),
+    ...buildProfile(localId, { first_name: firstName, last_name: lastName, student_id: studentId, consent_given: consentGiven, consent_timestamp: consentTimestamp }, email),
     // Store password hash equivalent for local auth
     _password: password
   };

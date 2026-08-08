@@ -102,9 +102,11 @@ export async function signUp(
   lastName: string,
   studentId: string,
   email: string,
-  password: string
+  password: string,
+  consentGiven: boolean = true
 ): Promise<{ user: Profile; stamps: Stamp[] }> {
   const supabase = getSupabase();
+  const consentTimestamp = consentGiven ? new Date().toISOString() : null;
 
   if (supabase) {
     const { data, error } = await supabase.auth.signUp({
@@ -134,7 +136,7 @@ export async function signUp(
     }
 
     if (data?.user) {
-      // Upsert profile row with all custom fields
+      // Upsert profile row with all custom fields including consent
       await supabase.from("profiles").upsert(
         {
           id: data.user.id,
@@ -144,14 +146,21 @@ export async function signUp(
           email,
           student_id: studentId,
           avatar_url: null,
-          consent_given: false,
+          consent_given: consentGiven,
+          consent_timestamp: consentTimestamp,
         },
         { onConflict: "id" }
       );
 
       const userProfile = await fetchProfile(supabase, data.user);
+      // Ensure local state reflects consent given if profile fetched defaults
+      const finalProfile = {
+        ...userProfile,
+        consent_given: consentGiven,
+        consent_timestamp: consentTimestamp || userProfile.consent_timestamp,
+      };
       const stamps = await fetchUserStamps(data.user.id);
-      return { user: userProfile, stamps };
+      return { user: finalProfile, stamps };
     }
   }
 
@@ -165,6 +174,7 @@ export async function signUp(
       studentId,
       email,
       password,
+      consentGiven,
     }),
   });
   const resData = await safeJson(res);

@@ -7,6 +7,7 @@ import { getSupabase } from "../../../lib/supabase/client";
 import { Profile, Stamp } from "../../../types";
 import { safeJson } from "../../../services/api";
 import { fetchUserStamps } from "../../landmark/services/stamps";
+import { isLoginEnabled } from "../../../lib/authConfig";
 
 export async function fetchProfile(supabase: any, authUser: any): Promise<Profile> {
   const { data: profile } = await supabase
@@ -49,6 +50,10 @@ export async function checkSession(): Promise<{ user: Profile; stamps: Stamp[] }
 }
 
 export async function signIn(email: string, password: string): Promise<{ user: Profile; stamps: Stamp[] }> {
+  if (!isLoginEnabled()) {
+    throw new Error("Account login is currently disabled.");
+  }
+
   const supabase = getSupabase();
 
   if (supabase) {
@@ -160,6 +165,9 @@ export async function signUp(
         consent_timestamp: consentTimestamp || userProfile.consent_timestamp,
       };
       const stamps = await fetchUserStamps(data.user.id);
+      if (!isLoginEnabled()) {
+        await supabase.auth.signOut();
+      }
       return { user: finalProfile, stamps };
     }
   }

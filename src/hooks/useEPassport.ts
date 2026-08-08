@@ -9,6 +9,7 @@ import { checkSession, signIn, signUp, signOut } from "../features/auth/services
 import { uploadStampPhoto } from "../features/landmark/services/stamps";
 import { acceptConsent } from "../features/auth/services/profile";
 import { landmarks } from "../lib/landmarks";
+import { isLoginEnabled } from "../lib/authConfig";
 
 export function useEPassport() {
   const [currentPage, setCurrentPage] = useState<Page>(Page.LOADING);
@@ -23,6 +24,7 @@ export function useEPassport() {
   const [milestonesFired, setMilestonesFired] = useState({ m3: false, m6: false });
   const [activeCelebration, setActiveCelebration] = useState<3 | 6 | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [authNotice, setAuthNotice] = useState<string | null>(null);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -110,6 +112,7 @@ export function useEPassport() {
   const handleLogin = async (email: string, password: string) => {
     setIsActionLoading(true);
     setAuthError(null);
+    setAuthNotice(null);
     try {
       const sessionData = await signIn(email, password);
       setCurrentUser(sessionData.user);
@@ -147,8 +150,19 @@ export function useEPassport() {
   ) => {
     setIsActionLoading(true);
     setAuthError(null);
+    setAuthNotice(null);
     try {
       const sessionData = await signUp(firstName, lastName, studentId, email, password);
+
+      // If login is disabled, do not log the user in or navigate away from auth page
+      if (!isLoginEnabled()) {
+        await signOut();
+        setCurrentUser(null);
+        setCurrentPage(Page.LOGIN);
+        setAuthNotice("Account created successfully!");
+        return;
+      }
+
       setCurrentUser(sessionData.user);
       const activeStamps = (sessionData.stamps || []).filter((s: Stamp) =>
         landmarks.some((l) => l.id === s.landmark_id)
@@ -248,6 +262,8 @@ export function useEPassport() {
     setActiveCelebration,
     authError,
     setAuthError,
+    authNotice,
+    setAuthNotice,
     showLogoutConfirm,
     setShowLogoutConfirm,
     handleLogin,

@@ -43,7 +43,7 @@ export default function SignUpForm({
 
   const STUDENT_ID_PATTERN = /^\d{2}-\d-\d{5}$/;
 
-  const handleSignUpSubmit = (e: React.FormEvent) => {
+  const handleSignUpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSignupError("");
     if (
@@ -79,7 +79,18 @@ export default function SignUpForm({
       setSignupError("You must agree to account verification, photo capture, and data accuracy terms before registering.");
       return;
     }
-    onSignUp(firstName, lastName, studentId, signupEmail, signupPassword);
+    await onSignUp(firstName, lastName, studentId, signupEmail, signupPassword);
+    
+    // Clear registration fields
+    setFirstName("");
+    setLastName("");
+    setStudentId("");
+    setSignupEmail("");
+    setSignupPassword("");
+    setSignupConfirm("");
+    setConsentGiven(false);
+    setHasOpenedPolicy(false);
+    setSignupError("");
   };
 
   const handleInterceptClick = (e: React.MouseEvent) => {

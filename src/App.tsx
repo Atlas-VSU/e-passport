@@ -28,6 +28,8 @@ export default function App() {
     activeCelebration,
     authError,
     setAuthError,
+    authNotice,
+    setAuthNotice,
     showLogoutConfirm,
     setShowLogoutConfirm,
     handleLogin,
@@ -94,7 +96,11 @@ export default function App() {
               onSignUp={handleSignUp}
               isLoggingIn={isActionLoading}
               authError={authError}
-              onModeChange={() => setAuthError(null)}
+              authNotice={authNotice}
+              onModeChange={() => {
+                setAuthError(null);
+                setAuthNotice(null);
+              }}
             />
           </motion.div>
         );

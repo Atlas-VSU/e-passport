@@ -21,7 +21,7 @@ export default function ConsentFooter({ onAccept, isSubmitting }: ConsentFooterP
           />
         </div>
         <span className="font-sans text-[10px] text-[#1A1A1A]/90 group-hover:text-[#004225] transition-colors leading-snug">
-          I agree to upload verification photos and share other personal information for the purpose of tracking.
+          I consent to providing my personal details, capturing my photos, and verifying my account information.
         </span>
       </label>
 

@@ -7,6 +7,7 @@ import { getSupabase } from "../../../lib/supabase/client";
 import { Profile, Stamp } from "../../../types";
 import { safeJson } from "../../../services/api";
 import { fetchUserStamps } from "../../landmark/services/stamps";
+import { isLoginEnabled } from "../../../lib/authConfig";
 
 export async function fetchProfile(supabase: any, authUser: any): Promise<Profile> {
   const { data: profile } = await supabase
@@ -49,6 +50,10 @@ export async function checkSession(): Promise<{ user: Profile; stamps: Stamp[] }
 }
 
 export async function signIn(email: string, password: string): Promise<{ user: Profile; stamps: Stamp[] }> {
+  if (!isLoginEnabled()) {
+    throw new Error("Account login is currently disabled.");
+  }
+
   const supabase = getSupabase();
 
   if (supabase) {
@@ -102,9 +107,11 @@ export async function signUp(
   lastName: string,
   studentId: string,
   email: string,
-  password: string
+  password: string,
+  consentGiven: boolean = true
 ): Promise<{ user: Profile; stamps: Stamp[] }> {
   const supabase = getSupabase();
+  const consentTimestamp = consentGiven ? new Date().toISOString() : null;
 
   if (supabase) {
     const { data, error } = await supabase.auth.signUp({
@@ -134,7 +141,7 @@ export async function signUp(
     }
 
     if (data?.user) {
-      // Upsert profile row with all custom fields
+      // Upsert profile row with all custom fields including consent
       await supabase.from("profiles").upsert(
         {
           id: data.user.id,
@@ -144,14 +151,24 @@ export async function signUp(
           email,
           student_id: studentId,
           avatar_url: null,
-          consent_given: false,
+          consent_given: consentGiven,
+          consent_timestamp: consentTimestamp,
         },
         { onConflict: "id" }
       );
 
       const userProfile = await fetchProfile(supabase, data.user);
+      // Ensure local state reflects consent given if profile fetched defaults
+      const finalProfile = {
+        ...userProfile,
+        consent_given: consentGiven,
+        consent_timestamp: consentTimestamp || userProfile.consent_timestamp,
+      };
       const stamps = await fetchUserStamps(data.user.id);
-      return { user: userProfile, stamps };
+      if (!isLoginEnabled()) {
+        await supabase.auth.signOut();
+      }
+      return { user: finalProfile, stamps };
     }
   }
 
@@ -165,6 +182,7 @@ export async function signUp(
       studentId,
       email,
       password,
+      consentGiven,
     }),
   });
   const resData = await safeJson(res);

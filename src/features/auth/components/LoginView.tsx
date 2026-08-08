@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, CheckCircle } from "lucide-react";
 import LoginCover from "./LoginCover";
 import AuthModeSwitcher from "./AuthModeSwitcher";
 import LoginForm from "./LoginForm";
 import SignUpForm from "./SignUpForm";
 
 import VerisFooter from "../../../components/VerisFooter";
+import { isLoginEnabled } from "../../../lib/authConfig";
 
 type AuthMode = "login" | "signup";
 
@@ -20,6 +21,7 @@ interface LoginViewProps {
   ) => void;
   isLoggingIn: boolean;
   authError: string | null;
+  authNotice?: string | null;
   /** Called whenever the user switches between Sign In / Register.
    *  Wire this to clear parent-owned authError so a stale error from
    *  one mode doesn't linger after switching to the other. */
@@ -39,14 +41,29 @@ export default function LoginView({
   onSignUp,
   isLoggingIn,
   authError,
+  authNotice,
   onModeChange,
 }: LoginViewProps) {
-  const [mode, setMode] = useState<AuthMode>("login");
+  const loginEnabled = isLoginEnabled();
+  const [mode, setMode] = useState<AuthMode>(loginEnabled ? "login" : "signup");
 
   const switchMode = (next: AuthMode) => {
     if (next === mode) return;
     setMode(next);
     onModeChange?.();
+  };
+
+  const handleSignUpWrapper = async (
+    firstName: string,
+    lastName: string,
+    studentId: string,
+    email: string,
+    password: string,
+  ) => {
+    await onSignUp(firstName, lastName, studentId, email, password);
+    if (!loginEnabled) {
+      setMode("login");
+    }
   };
 
   return (
@@ -68,7 +85,18 @@ export default function LoginView({
           </h2>
 
           {/* Mode Switcher */}
-          <AuthModeSwitcher mode={mode} onSwitchMode={switchMode} />
+          <AuthModeSwitcher
+            mode={mode}
+            onSwitchMode={switchMode}
+            loginEnabled={loginEnabled}
+          />
+
+          {authNotice && (
+            <div className="flex items-center justify-center gap-2 bg-[#F0FDF4] border border-[#B9F1C8] text-[#166534] text-xs font-sans rounded-2xl px-4 py-3 text-center mb-4">
+              <CheckCircle className="w-4 h-4 shrink-0 text-[#166534]" />
+              <span>{authNotice}</span>
+            </div>
+          )}
 
           {authError && (
             <div className="flex items-center justify-center gap-2 bg-[#FBEAEA] border border-[#E8B4B4] text-[#8B2E2E] text-xs font-sans rounded-2xl px-4 py-3 text-center mb-4">
@@ -87,13 +115,14 @@ export default function LoginView({
               labelClass={labelClass}
               iconWrap={iconWrap}
               iconSlotClass={iconSlotClass}
+              loginEnabled={loginEnabled}
             />
           )}
 
           {/* ── SIGN UP FORM ── */}
           {mode === "signup" && (
             <SignUpForm
-              onSignUp={onSignUp}
+              onSignUp={handleSignUpWrapper}
               isLoggingIn={isLoggingIn}
               onSwitchToLogin={() => switchMode("login")}
               inputClass={inputClass}

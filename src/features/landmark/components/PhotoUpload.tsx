@@ -55,12 +55,11 @@ export default function PhotoUpload({ onPhotoSelected, isUploading }: PhotoUploa
 
   return (
     <div className="w-full">
-      {/* Hidden file input supporting mobile camera direct capture */}
+      {/* Hidden file input supporting mobile camera or gallery */}
       <input 
         ref={fileInputRef}
         type="file" 
-        accept="image/*" 
-        capture="environment" 
+        accept="image/jpeg, image/png, image/jpg, image/webp, image/heic, image/heif" 
         className="hidden" 
         onChange={handleFileChange}
       />

@@ -77,12 +77,11 @@ export default function LandmarkDetailView({
         }}
       />
 
-      {/* Hidden file input supporting mobile camera direct capture */}
+      {/* Hidden file input supporting mobile camera or gallery */}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/jpeg, image/png, image/jpg, image/webp, image/heic, image/heif"
         className="hidden"
         onChange={handleFileChange}
       />

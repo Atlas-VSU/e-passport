@@ -5,6 +5,7 @@ import LandmarkHero from './LandmarkHero';
 import LandmarkInfo from './LandmarkInfo';
 import UserPhotoEntry from './UserPhotoEntry';
 import CheckInStatus from './CheckInStatus';
+import { normalizeImageFile } from '../../../utils/imageUtils';
 
 interface LandmarkDetailViewProps {
   landmark: Landmark;
@@ -31,31 +32,38 @@ export default function LandmarkDetailView({
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
-    // Validate size (limit to 8MB)
-    if (!file.type.startsWith('image/')) {
+    if (!rawFile.type.startsWith('image/')) {
       setErrorMsg('Please select or capture a valid image file.');
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setErrorMsg('Image size must be smaller than 8MB.');
+    // Allow up to 50MB before conversion (HEIC files can be large before being converted to JPEG)
+    if (rawFile.size > 50 * 1024 * 1024) {
+      setErrorMsg('Image file is too large. Please choose a smaller photo.');
       return;
     }
 
     setErrorMsg(null);
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setPreviewUrl(reader.result);
-      }
-    };
-    reader.onerror = () => {
-      setErrorMsg('Failed to process image capture.');
-    };
-    reader.readAsDataURL(file);
+
+    try {
+      // Convert HEIC/HEIF to JPEG if needed (no-op for other formats)
+      const file = await normalizeImageFile(rawFile);
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          setPreviewUrl(reader.result);
+        }
+      };
+      reader.onerror = () => {
+        setErrorMsg('Failed to process image. Please try a different photo.');
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      setErrorMsg('Could not convert this photo format. Please try a different image.');
+    }
   };
 
   const handleConfirm = () => {
@@ -77,12 +85,11 @@ export default function LandmarkDetailView({
         }}
       />
 
-      {/* Hidden file input supporting mobile camera direct capture */}
+      {/* Hidden file input supporting mobile camera or gallery */}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/jpeg, image/png, image/webp, image/heic, image/heif"
         className="hidden"
         onChange={handleFileChange}
       />

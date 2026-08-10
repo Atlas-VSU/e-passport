@@ -13,9 +13,9 @@ dotenv.config({ path: '.env.local', override: true });
 const app = express();
 const PORT = 3000;
 
-// Increase limits for base64 photo uploads
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ limit: '10mb', extended: true }));
+// Increase limits for base64 photo uploads (25mb allows for a 15MB image + 33% base64 expansion + JSON overhead)
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 // Ensure upload directory exists for local fallback image saving
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
@@ -483,13 +483,13 @@ app.post('/api/stamps/upload', async (req, res) => {
   const base64Data = photoBase64.replace(/^data:image\/\w+;base64,/, '');
   const buffer = Buffer.from(base64Data, 'base64');
 
-  // ── Size check: 5MB limit, measured on the actual decoded bytes ──
-  const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+  // ── Size check: 15MB limit, measured on the actual decoded bytes ──
+  const MAX_SIZE_BYTES = 15 * 1024 * 1024; // 15MB
   if (buffer.length === 0) {
     return res.status(400).json({ error: 'Photo data is empty or corrupted. Please try again.' });
   }
   if (buffer.length > MAX_SIZE_BYTES) {
-    return res.status(400).json({ error: 'Photo is too large. Please use an image under 5MB.' });
+    return res.status(400).json({ error: 'Photo is too large. Please use an image under 15MB.' });
   }
 
   // ── Type check: verify actual file signature, not just the claimed MIME type ──

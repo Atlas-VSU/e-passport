@@ -81,7 +81,7 @@ export default function LandmarkDetailView({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/jpeg, image/png, image/jpg, image/webp, image/heic, image/heif"
+        accept="image/jpeg, image/png, image/webp, image/heic, image/heif"
         className="hidden"
         onChange={handleFileChange}
       />

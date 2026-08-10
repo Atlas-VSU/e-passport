@@ -13,9 +13,9 @@ dotenv.config({ path: '.env.local', override: true });
 const app = express();
 const PORT = 3000;
 
-// Increase limits for base64 photo uploads
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ limit: '15mb', extended: true }));
+// Increase limits for base64 photo uploads (25mb allows for a 15MB image + 33% base64 expansion + JSON overhead)
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 // Ensure upload directory exists for local fallback image saving
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');

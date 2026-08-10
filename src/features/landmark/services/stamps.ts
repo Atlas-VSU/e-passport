@@ -43,21 +43,10 @@ async function getPendingStamps(): Promise<any[]> {
     const request = store.getAll();
     request.onsuccess = () => {
       const allItems = request.result || [];
-      // Only return items that haven't been synced to Firebase yet
+      // Only return items that haven't been synced to the backend yet
       resolve(allItems.filter((item: any) => !item.synced));
     };
     request.onerror = () => reject(request.error);
-  });
-}
-
-async function deleteFromIndexedDB(id: string): Promise<void> {
-  const db = await openDB();
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    store.delete(id);
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
   });
 }
 
@@ -87,8 +76,9 @@ async function compressImage(base64Str: string, maxSizeMB: number): Promise<stri
       const ctx = canvas.getContext("2d");
       if (!ctx) return reject(new Error("Canvas not supported"));
 
-      // Target max size for Base64 (leaving 0.5MB breathing room for JSON overhead)
-      const targetBase64Size = (maxSizeMB - 0.5) * 1024 * 1024;
+      // Target max size for Base64 characters (Base64 is 4/3 the size of the raw bytes)
+      // We leave 0.5MB breathing room for JSON overhead.
+      const targetBase64Chars = (maxSizeMB - 0.5) * 1024 * 1024 * (4 / 3);
 
       // Loop until the exported Base64 string is strictly under our limit
       do {
@@ -98,12 +88,12 @@ async function compressImage(base64Str: string, maxSizeMB: number): Promise<stri
         ctx.drawImage(img, 0, 0, width, height);
         dataUrl = canvas.toDataURL("image/jpeg", quality);
 
-        if (dataUrl.length > targetBase64Size) {
-          quality -= 0.15; // Drop quality
+        if (dataUrl.length > targetBase64Chars) {
+          quality = Math.max(0.1, quality - 0.15); // Drop quality to a min of 0.1
           width *= 0.85;   // Shrink dimensions
           height *= 0.85;
         }
-      } while (dataUrl.length > targetBase64Size && quality > 0.1);
+      } while (dataUrl.length > targetBase64Chars);
       
       resolve(dataUrl);
     };

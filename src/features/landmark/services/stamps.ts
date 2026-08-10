@@ -55,45 +55,73 @@ async function compressImage(base64Str: string, maxSizeMB: number): Promise<stri
   let byteString = "";
   try {
     byteString = atob(base64Str.split(",")[1] || base64Str);
-  } catch (e) {
-    return base64Str;
+  } catch {
+    // base64 data is malformed — rejecting here is safer than forwarding
+    // corrupted bytes to the server where they'd be stored as a broken image.
+    throw new Error("Image data is corrupted. Please retake the photo and try again.");
   }
-  
-  if (byteString.length <= maxSizeBytes) {
-    return base64Str; // Already small enough
+
+  const isAlreadyWebp = base64Str.startsWith("data:image/webp");
+  if (byteString.length <= maxSizeBytes && isAlreadyWebp) {
+    return base64Str; // Already small enough and WebP format
   }
 
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.src = base64Str.includes("data:image") ? base64Str : `data:image/jpeg;base64,${base64Str}`;
+    img.src = base64Str.includes("data:image") ? base64Str : `data:image/webp;base64,${base64Str}`;
     img.onload = () => {
       const canvas = document.createElement("canvas");
       let width = img.width;
       let height = img.height;
-      let quality = 0.9;
+
+      // Downscale long edge to max 1200px for optimal stamp quality and minimal size
+      const MAX_DIM = 1200;
+      if (width > MAX_DIM || height > MAX_DIM) {
+        if (width > height) {
+          height = Math.round((height * MAX_DIM) / width);
+          width = MAX_DIM;
+        } else {
+          width = Math.round((width * MAX_DIM) / height);
+          height = MAX_DIM;
+        }
+      }
+
+      let quality = 0.80;
       let dataUrl = "";
       const ctx = canvas.getContext("2d");
       if (!ctx) return reject(new Error("Canvas not supported"));
 
-      // Target max size for Base64 characters (Base64 is 4/3 the size of the raw bytes)
-      // We leave 0.5MB breathing room for JSON overhead.
-      const targetBase64Chars = (maxSizeMB - 0.5) * 1024 * 1024 * (4 / 3);
+      // Target max base64 length for the requested maxSizeMB
+      const targetBase64Chars = maxSizeMB * 1024 * 1024 * (4 / 3);
+
+      const MIN_DIMENSION = 100;
+      const MAX_ITERATIONS = 20;
+      let iterations = 0;
 
       // Loop until the exported Base64 string is strictly under our limit
       do {
-        canvas.width = width;
-        canvas.height = height;
-        ctx.clearRect(0, 0, width, height);
-        ctx.drawImage(img, 0, 0, width, height);
-        dataUrl = canvas.toDataURL("image/jpeg", quality);
+        canvas.width = Math.max(Math.round(width), MIN_DIMENSION);
+        canvas.height = Math.max(Math.round(height), MIN_DIMENSION);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        dataUrl = canvas.toDataURL("image/webp", quality);
 
         if (dataUrl.length > targetBase64Chars) {
           quality = Math.max(0.1, quality - 0.15); // Drop quality to a min of 0.1
           width *= 0.85;   // Shrink dimensions
           height *= 0.85;
         }
+
+        iterations++;
+
+        // Exit early if we've hit both the quality floor and the dimension floor,
+        // or if we've exceeded the iteration cap — accept whatever we have.
+        const atDimensionFloor = width <= MIN_DIMENSION || height <= MIN_DIMENSION;
+        if ((quality <= 0.1 && atDimensionFloor) || iterations >= MAX_ITERATIONS) {
+          break;
+        }
       } while (dataUrl.length > targetBase64Chars);
-      
+
       resolve(dataUrl);
     };
     img.onerror = (e) => reject(e);
@@ -115,12 +143,41 @@ export async function fetchUserStamps(userId: string): Promise<Stamp[]> {
   }
 }
 
+/**
+ * Returns any stamps that are queued in IndexedDB (offline / upload-failed)
+ * as proper Stamp objects so the UI can show them immediately after a page
+ * reload — before the background sync has had a chance to push them to the server.
+ *
+ * These are filtered to the given userId so a shared device doesn't bleed state.
+ */
+export async function fetchPendingStampsAsStamps(userId: string): Promise<Stamp[]> {
+  try {
+    const pending = await getPendingStamps();
+    return pending
+      .filter((task) => task.userId === userId)
+      .map((task) => ({
+        id: task.id,
+        user_id: task.userId,
+        landmark_id: task.landmarkId,
+        // Use the stored base64 thumbnail as the photo URL so the passport
+        // page can still render the photo even while offline.
+        photo_url: task.base64Photo ?? '',
+        stamped_at: task.timestamp ?? new Date().toISOString(),
+        // Mark as pending so callers can distinguish it from a synced stamp
+        _pending: true,
+      } as Stamp & { _pending: boolean }));
+  } catch {
+    // IndexedDB unavailable (private mode, some browsers) — fail silently
+    return [];
+  }
+}
+
 let isSyncing = false;
 
 export async function syncPendingStamps(): Promise<void> {
   if (isSyncing || (typeof navigator !== 'undefined' && !navigator.onLine)) return;
   isSyncing = true;
-  
+
   try {
     const pending = await getPendingStamps();
     for (const task of pending) {
@@ -166,8 +223,8 @@ export async function uploadStampPhoto(
   base64Photo: string
 ): Promise<Stamp> {
 
-  // 1. Compress if over 15MB
-  const compressedPhoto = await compressImage(base64Photo, 15);
+  // 1. Compress & downscale photo (target 0.5MB max)
+  const compressedPhoto = await compressImage(base64Photo, 0.5);
   const taskId = `${userId}-${landmarkId}`;
 
   // 2. Try uploading to the server directly (primary path)

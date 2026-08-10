@@ -6,7 +6,7 @@
 import { useState, useEffect } from "react";
 import { Page, Profile, Stamp, Landmark } from "../types";
 import { checkSession, signIn, signUp, signOut } from "../features/auth/services/auth";
-import { uploadStampPhoto } from "../features/landmark/services/stamps";
+import { uploadStampPhoto, fetchPendingStampsAsStamps } from "../features/landmark/services/stamps";
 import { acceptConsent } from "../features/auth/services/profile";
 import { landmarks } from "../lib/landmarks";
 import { isLoginEnabled } from "../lib/authConfig";
@@ -15,6 +15,7 @@ export function useEPassport() {
   const [currentPage, setCurrentPage] = useState<Page>(Page.LOADING);
   const [currentUser, setCurrentUser] = useState<Profile | null>(null);
   const [stamps, setStamps] = useState<Stamp[]>([]);
+  const [pendingStampIds, setPendingStampIds] = useState<Set<string>>(new Set());
   const [selectedLandmark, setSelectedLandmark] = useState<Landmark | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
@@ -36,9 +37,20 @@ export function useEPassport() {
         const sessionData = await checkSession();
         if (sessionData) {
           setCurrentUser(sessionData.user);
-          const activeStamps = (sessionData.stamps || []).filter((s: Stamp) =>
+          const serverStamps = (sessionData.stamps || []).filter((s: Stamp) =>
             landmarks.some((l) => l.id === s.landmark_id)
           );
+
+          // Merge any offline-queued stamps that haven't synced yet.
+          // This ensures the UI shows the stamped state after a page reload
+          // even when the server hasn't received the upload.
+          const pendingStamps = await fetchPendingStampsAsStamps(sessionData.user.id);
+          const serverLandmarkIds = new Set(serverStamps.map((s: Stamp) => s.landmark_id));
+          // Only add pending stamps for landmarks not already on the server
+          const offlineOnly = pendingStamps.filter((s) => !serverLandmarkIds.has(s.landmark_id));
+          const activeStamps = [...serverStamps, ...offlineOnly];
+
+          setPendingStampIds(new Set(offlineOnly.map((s) => s.landmark_id)));
           setStamps(activeStamps);
           setMilestonesFired({
             m3: activeStamps.length >= 3,
@@ -212,6 +224,12 @@ export function useEPassport() {
     try {
       const newStamp = await uploadStampPhoto(currentUser.id, selectedLandmark.id, base64Photo);
       setJustStampedId(selectedLandmark.id);
+      // Remove from pending set if it was queued offline previously
+      setPendingStampIds((prev) => {
+        const next = new Set(prev);
+        next.delete(selectedLandmark.id);
+        return next;
+      });
       setStamps((prev) => {
         const filtered = prev.filter((s) => s.landmark_id !== selectedLandmark.id);
         return [...filtered, newStamp];
@@ -219,7 +237,7 @@ export function useEPassport() {
       setCurrentPage(Page.STAMP_CONFIRMATION);
     } catch (err) {
       console.error("Stamp photo upload failed:", err);
-      alert("Failed to upload visit proof photo. Please try again.");
+      throw err; // Let the PhotoErrorModal in LandmarkDetailView handle display
     } finally {
       setIsActionLoading(false);
     }
@@ -249,6 +267,7 @@ export function useEPassport() {
     setCurrentUser,
     stamps,
     setStamps,
+    pendingStampIds,
     selectedLandmark,
     setSelectedLandmark,
     isActionLoading,

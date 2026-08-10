@@ -4,7 +4,6 @@
  */
 
 import { Stamp } from "../../../types";
-import { safeJson } from "../../../services/api";
 
 // --- IndexedDB Setup ---
 const DB_NAME = "e-passport-offline";
@@ -105,7 +104,7 @@ async function compressImage(base64Str: string, maxSizeMB: number): Promise<stri
 export async function fetchUserStamps(userId: string): Promise<Stamp[]> {
   try {
     const res = await fetch(`/api/stamps?userId=${userId}`);
-    const data = await safeJson(res);
+    const data = await res.json();
     if (data?.stamps) {
       return data.stamps;
     }
@@ -166,30 +165,66 @@ export async function uploadStampPhoto(
   landmarkId: string,
   base64Photo: string
 ): Promise<Stamp> {
-  
+
   // 1. Compress if over 15MB
   const compressedPhoto = await compressImage(base64Photo, 15);
-
-  // 2. Save to Offline Queue (IndexedDB)
-  // By using just userId-landmarkId, a retake automatically OVERWRITES the old photo in IndexedDB!
   const taskId = `${userId}-${landmarkId}`;
+
+  // 2. Try uploading to the server directly (primary path)
+  if (typeof navigator === 'undefined' || navigator.onLine) {
+    try {
+      const res = await fetch("/api/stamps/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          landmarkId,
+          photoBase64: compressedPhoto,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data?.stamp) {
+        // Save to IndexedDB as a synced local cache entry
+        await saveToIndexedDB({
+          id: taskId,
+          userId,
+          landmarkId,
+          base64Photo: compressedPhoto,
+          timestamp: new Date().toISOString(),
+          synced: true,
+        });
+        return data.stamp as Stamp;
+      }
+
+      // Server returned an error response — throw so we fall through to queue
+      throw new Error(data?.error || "Server returned an error.");
+
+    } catch (err) {
+      console.warn("Online upload failed, queuing to IndexedDB:", err);
+      // Fall through to queue below
+    }
+  }
+
+  // 3. Offline fallback — queue in IndexedDB to sync later
   await saveToIndexedDB({
     id: taskId,
     userId,
     landmarkId,
     base64Photo: compressedPhoto,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    synced: false,
   });
 
-  // 3. Trigger sync in background (fire and forget)
-  syncPendingStamps();
+  console.log(`Stamp ${taskId} saved offline — will sync when reconnected.`);
 
-  // 4. Return fake success instantly for smooth UI
+  // Return an optimistic stamp so the UI updates immediately
   return {
     id: taskId,
     user_id: userId,
     landmark_id: landmarkId,
-    photo_url: compressedPhoto, // Show the local compressed version immediately
+    photo_url: compressedPhoto,
     stamped_at: new Date().toISOString()
   } as Stamp;
 }

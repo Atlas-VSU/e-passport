@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera } from 'lucide-react';
+import { Camera, Image as ImageIcon } from 'lucide-react';
 import { Stamp } from '../../../types';
 import PhotoErrorModal from './PhotoErrorModal';
 
@@ -12,7 +12,8 @@ interface CheckInStatusProps {
   isPendingSync?: boolean;   // stamp saved offline, waiting for connection sync
   errorMsg: string | null;
   onDismissError: () => void;
-  handleTriggerInput: () => void;
+  onTriggerCamera: () => void;
+  onTriggerGallery: () => void;
   onRetake: () => void;
   handleConfirm: () => void;
   onViewStickerBook?: () => void;
@@ -92,7 +93,8 @@ export default function CheckInStatus({
   isPendingSync,
   errorMsg,
   onDismissError,
-  handleTriggerInput,
+  onTriggerCamera,
+  onTriggerGallery,
   onRetake,
   handleConfirm,
   onViewStickerBook,
@@ -307,7 +309,7 @@ export default function CheckInStatus({
           <div className="flex items-center gap-4">
             <button
               type="button"
-              onClick={handleTriggerInput}
+              onClick={onTriggerCamera}
               className="w-14 h-14 rounded-full bg-[#0F6E56] border-[2.5px] border-[#CBA052] flex items-center justify-center shadow-md transition-all active:scale-95 shrink-0 cursor-pointer"
               style={{ boxShadow: '0 0 0 4px rgba(203,160,82,0.12)' }}
             >
@@ -326,10 +328,11 @@ export default function CheckInStatus({
 
           <button
             type="button"
-            onClick={handleTriggerInput}
-            className="w-full py-3 bg-gradient-to-r from-[#FFE58F] to-[#D4AF37] hover:brightness-105 active:scale-[0.98] text-[#1c1103] font-mono text-[11px] font-bold tracking-widest rounded-[20px] uppercase mt-4 transition-all cursor-pointer shadow-md"
+            onClick={onTriggerGallery}
+            className="w-full py-3 bg-gradient-to-r from-[#FFE58F] to-[#D4AF37] hover:brightness-105 active:scale-[0.98] text-[#1c1103] font-mono text-[11px] font-bold tracking-widest rounded-[20px] uppercase mt-4 transition-all cursor-pointer shadow-md flex items-center justify-center gap-2"
           >
-            tap to open camera
+            <ImageIcon className="w-4 h-4" />
+            <span>upload from gallery</span>
           </button>
         </div>
       )}

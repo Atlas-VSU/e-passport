@@ -19,6 +19,7 @@ export default function App() {
     setCurrentPage,
     currentUser,
     stamps,
+    pendingStampIds,
     selectedLandmark,
     setSelectedLandmark,
     isActionLoading,
@@ -183,6 +184,7 @@ export default function App() {
               landmark={selectedLandmark}
               stamp={stamps.find((s) => s.landmark_id === selectedLandmark.id)}
               isUploading={isActionLoading}
+              isPendingSync={pendingStampIds.has(selectedLandmark.id)}
               onBack={() => setCurrentPage(Page.PASSPORT)}
               onPhotoSelected={handlePhotoConfirmed}
               onViewStickerBook={() => {

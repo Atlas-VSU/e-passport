@@ -1,66 +1,145 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Landmark, Stamp } from '../../../types';
 import LandmarkHeader from './LandmarkHeader';
 import LandmarkHero from './LandmarkHero';
 import LandmarkInfo from './LandmarkInfo';
 import UserPhotoEntry from './UserPhotoEntry';
 import CheckInStatus from './CheckInStatus';
+import { normalizeImageFile } from '../../../utils/imageUtils';
 
 interface LandmarkDetailViewProps {
   landmark: Landmark;
   stamp?: Stamp;
   isUploading: boolean;
+  isPendingSync: boolean;
   onBack: () => void;
   onPhotoSelected: (base64Photo: string) => void;
   onViewStickerBook?: () => void;
+}
+
+/** Promisified FileReader so we can await it inline. */
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new Error('Failed to read image file.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 export default function LandmarkDetailView({
   landmark,
   stamp,
   isUploading,
+  isPendingSync,
   onBack,
   onPhotoSelected,
-  onViewStickerBook
+  onViewStickerBook,
 }: LandmarkDetailViewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Object URL for instant display — never sent to the server
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // Base64 JPEG that will actually be uploaded — computed in the background
+  const [uploadBase64, setUploadBase64] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Track the current object URL so we can revoke it when no longer needed
+  const objectUrlRef = useRef<string | null>(null);
+
+  // Revoke the object URL when the component unmounts to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
+
+  const revokeCurrentObjectUrl = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+  };
 
   const handleTriggerInput = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
 
-    // Validate size (limit to 8MB)
-    if (!file.type.startsWith('image/')) {
-      setErrorMsg('Please select or capture a valid image file.');
+    // Intercept camera RAW file formats (.dng, .cr2, .cr3, .nef, .arw, .orf, .rw2, .raf, .pef, .srw)
+    const rawFormatExt = /\.(dng|cr2|cr3|nef|arw|orf|rw2|raf|pef|srw|dcr|erf|mrw)$/i;
+    const isRawMime = rawFile.type.includes('raw') || rawFile.type.includes('dng') || rawFile.type.includes('cr2') || rawFile.type.includes('nef') || rawFile.type.includes('arw');
+    if (rawFormatExt.test(rawFile.name) || isRawMime) {
+      setErrorMsg('Camera RAW photos (.DNG, .CR2, .NEF, .ARW) are not supported. Please convert your photo to JPEG, PNG, or WebP first.');
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setErrorMsg('Image size must be smaller than 8MB.');
+
+    // Some browsers (older iOS Safari) omit the MIME type for HEIC files entirely
+    // (file.type === ''), so we also accept files whose extension is a known image format.
+    const knownImageExt = /\.(jpe?g|png|webp|gif|heic|heif|avif|bmp|tiff?)$/i;
+    const hasImageMime = rawFile.type.startsWith('image/');
+    const hasImageExt = knownImageExt.test(rawFile.name);
+    if (!hasImageMime && !hasImageExt) {
+      setErrorMsg('The selected file format is unsupported. Please choose a valid photo (JPEG, PNG, WebP, or HEIC).');
+      return;
+    }
+    // Allow up to 50MB before conversion (HEIC files can be large before being converted to JPEG)
+    if (rawFile.size > 50 * 1024 * 1024) {
+      setErrorMsg('Image file is too large. Please choose a smaller photo.');
       return;
     }
 
     setErrorMsg(null);
-    const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setPreviewUrl(reader.result);
-      }
-    };
-    reader.onerror = () => {
-      setErrorMsg('Failed to process image capture.');
-    };
-    reader.readAsDataURL(file);
+    setUploadBase64(null);
+
+    // ── Step 1: Show the preview instantly via an object URL ──────────────
+    // This works immediately regardless of file format. Safari renders HEIC
+    // natively; other browsers render JPEG/PNG/WebP. The user sees their photo
+    // right away while conversion runs in the background.
+    revokeCurrentObjectUrl();
+    const objUrl = URL.createObjectURL(rawFile);
+    objectUrlRef.current = objUrl;
+    setPreviewUrl(objUrl);
+    setIsProcessing(true);
+
+    // ── Step 2: Convert HEIC → JPEG in the background ─────────────────────
+    // normalizeImageFile is a no-op for non-HEIC formats so this stays fast.
+    // We then read the result as a base64 data URL for the upload payload.
+    try {
+      const normalized = await normalizeImageFile(rawFile);
+      const base64 = await readFileAsDataURL(normalized);
+      setUploadBase64(base64);
+      // Update the preview URL with the converted and compressed photo payload
+      // so Chrome/Firefox/Edge render the compressed photo cleanly before confirm.
+      setPreviewUrl(base64);
+    } catch (err) {
+      setErrorMsg(
+        err instanceof Error
+          ? err.message
+          : 'Could not process this photo format. Please try a different image.'
+      );
+      // Leave the preview visible so the user can see what failed,
+      // but the confirm button will remain disabled (uploadBase64 is null).
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleRetake = () => {
+    revokeCurrentObjectUrl();
+    setPreviewUrl(null);
+    setUploadBase64(null);
+    setErrorMsg(null);
+    // Reset the input so the same file can be re-selected and fires onChange again
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleConfirm = () => {
-    if (previewUrl) {
-      onPhotoSelected(previewUrl);
+    if (uploadBase64) {
+      onPhotoSelected(uploadBase64);
     }
   };
 
@@ -77,12 +156,11 @@ export default function LandmarkDetailView({
         }}
       />
 
-      {/* Hidden file input supporting mobile camera direct capture */}
+      {/* Hidden file input supporting mobile camera or gallery */}
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
-        capture="environment"
+        accept="image/jpeg, image/png, image/webp, image/heic, image/heif, .heic, .heif"
         className="hidden"
         onChange={handleFileChange}
       />
@@ -102,10 +180,14 @@ export default function LandmarkDetailView({
           <CheckInStatus
             stamp={stamp}
             previewUrl={previewUrl}
+            isProcessing={isProcessing}
+            isConfirmReady={!!uploadBase64 && !isProcessing}
             isUploading={isUploading}
+            isPendingSync={isPendingSync}
             errorMsg={errorMsg}
+            onDismissError={() => setErrorMsg(null)}
             handleTriggerInput={handleTriggerInput}
-            setPreviewUrl={setPreviewUrl}
+            onRetake={handleRetake}
             handleConfirm={handleConfirm}
             onViewStickerBook={onViewStickerBook}
           />

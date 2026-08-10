@@ -36,7 +36,8 @@ export default function LandmarkDetailView({
   onPhotoSelected,
   onViewStickerBook,
 }: LandmarkDetailViewProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   // Object URL for instant display — never sent to the server
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   // Base64 JPEG that will actually be uploaded — computed in the background
@@ -61,8 +62,12 @@ export default function LandmarkDetailView({
     }
   };
 
-  const handleTriggerInput = () => {
-    fileInputRef.current?.click();
+  const handleTriggerCamera = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleTriggerGallery = () => {
+    galleryInputRef.current?.click();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -133,8 +138,9 @@ export default function LandmarkDetailView({
     setPreviewUrl(null);
     setUploadBase64(null);
     setErrorMsg(null);
-    // Reset the input so the same file can be re-selected and fires onChange again
-    if (fileInputRef.current) fileInputRef.current.value = '';
+    // Reset the inputs so the same file can be re-selected and fires onChange again
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
+    if (galleryInputRef.current) galleryInputRef.current.value = '';
   };
 
   const handleConfirm = () => {
@@ -156,9 +162,18 @@ export default function LandmarkDetailView({
         }}
       />
 
-      {/* Hidden file input supporting mobile camera or gallery */}
+      {/* Hidden file input for camera */}
       <input
-        ref={fileInputRef}
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+      />
+      {/* Hidden file input for gallery */}
+      <input
+        ref={galleryInputRef}
         type="file"
         accept="image/jpeg, image/png, image/webp, image/heic, image/heif, .heic, .heif"
         className="hidden"
@@ -186,7 +201,8 @@ export default function LandmarkDetailView({
             isPendingSync={isPendingSync}
             errorMsg={errorMsg}
             onDismissError={() => setErrorMsg(null)}
-            handleTriggerInput={handleTriggerInput}
+            onTriggerCamera={handleTriggerCamera}
+            onTriggerGallery={handleTriggerGallery}
             onRetake={handleRetake}
             handleConfirm={handleConfirm}
             onViewStickerBook={onViewStickerBook}
